@@ -1,0 +1,5 @@
+openai==1.11.1
+pyTelegramBotAPI==4.13.0
+schedule==1.2.1
+cloudpayments-python-client==1.1.1
+requests==2.31.0
