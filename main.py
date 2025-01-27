@@ -7,7 +7,10 @@ import time
 import schedule
 import datetime
 import threading
-
+import cloudpayments
+import requests
+import uuid
+import base64
 
 with open("messages.json", "r", encoding='utf-8') as messages:
     txt = json.load(messages)
@@ -15,7 +18,8 @@ with open("config.json", "r", encoding='utf-8') as config:
     config_bd = json.load(config)
 bot = telebot.TeleBot(config_bd["tg_token"])
 openai.api_key = config_bd["chatGPT_token"]
-
+PUBLIC_ID = config_bd["PAYMENTS_ID"]
+API_SECRET =  config_bd["PAYMENTS_TOKEN"]
 
 class MockMessage:
     def __init__(self, chat_id, text):
@@ -43,6 +47,126 @@ def user_get_thread(message):
         assistant_id=assist_id,
     )
     user_data_upgrade(message, "id_thread", str(thread.id))
+
+def check_subscription_status(subscription_id):
+    api = cloudpayments.CloudPayments(PUBLIC_ID, API_SECRET)
+    url = "https://api.cloudpayments.ru/subscriptions/get"
+
+    auth_str = f"{PUBLIC_ID}:{API_SECRET}"
+    encoded_auth_str = base64.b64encode(auth_str.encode()).decode()
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {encoded_auth_str}'
+    }
+    data = {
+        'Id' : subscription_id,
+    }
+
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        response_data = response.json()
+        if response_data.get('Success') and response_data['Model']['Status'] == 'Active':
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+
+def deactivate_order(subscription_id):
+    api = cloudpayments.CloudPayments(PUBLIC_ID, API_SECRET)
+    url = "https://api.cloudpayments.ru/orders/cancel"
+    auth_str = f"{PUBLIC_ID}:{API_SECRET}"
+    encoded_auth_str = base64.b64encode(auth_str.encode()).decode()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {encoded_auth_str}'
+                }
+    data = {
+        'Id': subscription_id,
+            }
+    try:
+        response = requests.post(url, headers=headers, data = json.dumps(data))
+        response.raise_for_status()
+        response_data = response.json()
+        if response_data.get('Success'):
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+
+def sub_pay(amount, id, description="Оплата подписки", order_id=None, account_id=None):
+    if not order_id:
+        order_id = str(uuid.uuid4())
+    if not account_id:
+        account_id = str(uuid.uuid4())
+    api = cloudpayments.CloudPayments(PUBLIC_ID, API_SECRET)
+    url = "https://api.cloudpayments.ru/orders/create"
+    auth_str = f"{PUBLIC_ID}:{API_SECRET}"
+    encoded_auth_str = base64.b64encode(auth_str.encode()).decode()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {encoded_auth_str}'
+    }
+    data = {
+        'Amount': amount,
+        'Currency': "RUB",
+        'Description': description,
+        'SubscriptionBehavior':'CreateMonthly',
+        'InvoiceId': order_id,
+        'AccountId': account_id
+    }
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        response_data = response.json()
+
+        if response_data.get('Success'):
+            print(response_data)
+            user_data_upgrade(id, "sub_id", response_data['Model']["Id"])
+            return response_data['Model']['Url']
+        else:
+            return "something dont work"
+    except requests.exceptions.RequestException:
+        return "something dont work"
+
+def check_pay(id):
+    api = cloudpayments.CloudPayments(PUBLIC_ID, API_SECRET)
+    url = f"https://api.cloudpayments.ru/payments/get"
+    auth_str = f"{PUBLIC_ID}:{API_SECRET}"
+    encoded_auth_str = base64.b64encode(auth_str.encode()).decode()
+    with open("user.json", "r", encoding='utf-8') as user:
+        user = json.load(user)
+    transaction_id = user[id]["sub_id"]
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {encoded_auth_str}'
+    }
+    data = {
+        'TransactionId': transaction_id,
+    }
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        response_data = response.json()
+        print(response_data)
+        if response_data.get('Success') and response_data['Model']['Status'] == "Active":
+            if response_data['Model']['Amount'] == config_bd["sub_lvl2_price"]:
+                user_data_upgrade(id, "sub_lvl", 1)
+            if response_data['Model']['Amount'] == config_bd["sub_lvl3_price"]:
+                user_data_upgrade(id, "sub_lvl", 2)
+            return True
+        else:
+            
+            return False
+    except requests.exceptions.RequestException as e:
+        print("Произошла ошибка при отправке запроса:", e)
+        return False
+    
+    
+    
 def user_requests_upgrade(message):
     with open("user.json", 'r+', encoding='utf-8') as f:
         data = json.load(f)
@@ -79,6 +203,7 @@ def user_requests_upgrade(message):
             f.seek(0)
             json.dump(data, f, indent=4, ensure_ascii=False)
             f.truncate()
+
 def reg_proof(id:str = "str please "):
     with open("user.json", 'r+', encoding='utf-8') as user:
         data = json.load(user)
@@ -86,6 +211,7 @@ def reg_proof(id:str = "str please "):
             return "logged" 
         else:
             return "not logged"
+
 def user_data_upgrade(message, key:str = "str please", value:str = "str please"):
     id = str(message.chat.id)
     with open("user.json", 'r+', encoding='utf-8') as user:
@@ -93,13 +219,10 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
         if id in data:
             if key == "country":
                 if data[value] == id:
-                    bot.send_message(message.chat.id, txt["msg"]["country_choose2_himself"].format(country=value))
                     return "busy himself"
                 elif data[value] != 0:
-                    bot.send_message(message.chat.id, txt["msg"]["country_choose2_busy"].format(country=value))
                     return "busy somebody"
                 for country in txt["btn"]["country"]:
-                    
                     if data[country] == id:
                         data[country] = 0
                         data[value] = id
@@ -107,7 +230,6 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
                         user.seek(0)
                         json.dump(data, user, indent=4, ensure_ascii=False)
                         user.truncate()
-                        bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(country=str(message.text)))
                         return "success"
                     
             if key == "sub_lvl":
@@ -123,6 +245,12 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
                 json.dump(data, user, indent=4, ensure_ascii=False)
                 user.truncate()
                 return "successs"
+            if key == "sub_id":
+                data[id]["sub_id"] = value
+                user.seek(0)
+                json.dump(data, user, indent=4, ensure_ascii=False)
+                user.truncate()
+                return "successs"
         else:
             if data[value] != 0:
                 bot.send_message(message.chat.id, txt["msg"]["country_choose2_busy"].format(country=value))
@@ -132,6 +260,7 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
                 "id_thread":"None",
                 key:value,
                 "sub_lvl":"0",
+                "sub_id":"0",
                 "req":"0"
             }
             data[value] = id
@@ -140,6 +269,7 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
             user.truncate()
             bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(country=str(message.text)))
             return "new user"
+
 def chat_gpt(message):
     with open("user.json", 'r+', encoding='utf-8') as user:
         data = json.load(user)
@@ -368,7 +498,7 @@ def country_choose(message):
 def country_choose2(message):
     if str(message.text) in txt["btn"]["country"]:
         refund = user_data_upgrade(message, "country", str(message.text))
-        if refund == "success":
+        if refund == "busy himself":
             markup = types.ReplyKeyboardMarkup()
             btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
             btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
@@ -378,12 +508,28 @@ def country_choose2(message):
             btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
             btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
             markup.row(btn4, btn5, btn6)
-            user_get_thread(message)
             with open("user.json", "r", encoding='utf-8') as user:
                 user = json.load(user)
-                bot.send_message(message.chat.id, text = txt["msg"]["main_win"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
+            bot.send_message(message.chat.id, txt["msg"]["country_choose2_himself"].format(country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
             bot.register_next_step_handler(message, main_win1)
-            
+        if refund == "success":
+            user_get_thread(message)
+            markup = types.ReplyKeyboardMarkup()
+            btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+            btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+            btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+            markup.row(btn1, btn2, btn3)
+            btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+            btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+            btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+            markup.row(btn4, btn5, btn6)
+            with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+            bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
+            bot.register_next_step_handler(message, main_win1)
+        elif refund == "busy somebody":
+            bot.send_message(message.chat.id, txt["msg"]["country_choose2_busy"].format(country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
+            bot.register_next_step_handler(message, country_choose2)
         elif refund == "new user":
             user_get_thread(message)
             with open("sub.png", 'rb') as photo:
@@ -417,39 +563,49 @@ def sub(message):
             bot.send_message(message.chat.id, text = txt["msg"]["main_win"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
             bot.register_next_step_handler(message, main_win1)
         if str(message.text) == txt["btn"]["sub"][1]:
-            user_data_upgrade(message, "sub_lvl", 2)
             markup = types.ReplyKeyboardMarkup()
-            btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
-            btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
-            btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
-            markup.row(btn1, btn2, btn3)
-            btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
-            btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
-            btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
-            markup.row(btn4, btn5, btn6)
-            with open("user.json", "r", encoding='utf-8') as user:
-                user = json.load(user)
-            bot.send_message(message.chat.id, text = txt["msg"]["main_win"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
-            bot.register_next_step_handler(message, main_win1)
+            btn1 = types.KeyboardButton(text=txt["btn"]["sub_found"])
+            markup.row(btn1)
+            bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl2_price"],message)), reply_markup=markup)
+            bot.register_next_step_handler(message, sub1)
         if str(message.text) == txt["btn"]["sub"][2]:
-            user_data_upgrade(message, "sub_lvl", 3)
             markup = types.ReplyKeyboardMarkup()
-            btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
-            btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
-            btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
-            markup.row(btn1, btn2, btn3)
-            btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
-            btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
-            btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
-            markup.row(btn4, btn5, btn6)
-            with open("user.json", "r", encoding='utf-8') as user:
-                user = json.load(user)
-            bot.send_message(message.chat.id, text = txt["msg"]["main_win"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
-            bot.register_next_step_handler(message, main_win1)
+            btn1 = types.KeyboardButton(text=txt["btn"]["sub_found"])
+            markup.row(btn1)
+            bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl3_price"],message)), reply_markup=markup)
+            bot.register_next_step_handler(message, sub1)
     else:
         bot.send_message(message.chat.id, text = txt["msg"]["sub_err"])
         print("meow")
         bot.register_next_step_handler(message, main_win1)
+
+def sub1(message):
+    condition = check_pay(str(message.chat.id))
+    if condition == False:
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+        markup.row(btn4, btn5, btn6)
+        bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup=markup)
+    if condition == True:
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+        markup.row(btn4, btn5, btn6)
+        bot.send_message(message.chat.id, text = txt["msg"]["sub_check_found"], reply_markup=markup)
+    
+
+
     
 def send_mail(message):
     if str(message.text) in txt["btn"]["country"]:
@@ -479,6 +635,7 @@ def send_mail1(message, id):
     except ValueError:
         pass
     bot.register_next_step_handler(message, main_win1)
+
 def news():
     while True:
         time.sleep(6000) 
@@ -491,7 +648,7 @@ def send_daily_message():
         user = json.load(user)
     for country in txt["btn"]["country"]:
         if user[country] != 0:
-            mock_message = MockMessage(chat_id=str(user[country]), text=f"Наступил новый {user["current_data"]} год, подведи его итог и сгенерируй событие, которое положит начало новому году")
+            mock_message = MockMessage(chat_id=str(user[country]), text="Наступил новый {current_data} год, подведи его итог и сгенерируй событие, которое положит начало новому году".format(current_data = user["current_data"]))
             chat_gpt(mock_message)
         else:
             pass
@@ -503,6 +660,7 @@ def send_daily_message():
         json.dump(data, user, indent=4, ensure_ascii=False)
         user.truncate()
 schedule.every().day.at("19:53").do(send_daily_message)
+
 
 if __name__ == '__main__':
     bot_thread = threading.Thread(target=bot_polling)
