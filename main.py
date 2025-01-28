@@ -169,8 +169,19 @@ def check_pay(id):
         print("Произошла ошибка при отправке запроса:", e)
         return False
     
-    
-    
+def bot_trac(who, message):
+    if who == 1:
+        bot.forward_message( 
+            chat_id=-4707616830,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )    
+    else:
+        bot.forward_message(
+            chat_id=-4707616830,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )
 def user_requests_upgrade(message):
     with open("user.json", 'r+', encoding='utf-8') as f:
         data = json.load(f)
@@ -311,8 +322,8 @@ def chat_gpt(message):
                 btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
                 btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
                 markup.row(btn4, btn5, btn6)
-                bot.send_message(message.chat.id, text=content_item.text.value,reply_markup=markup)
-
+                bot_trac(1, bot.send_message(message.chat.id, text=content_item.text.value,reply_markup=markup))
+                
 @bot.message_handler(commands=['answer'])
 def handle_answer(message):
     with open("user.json", "r", encoding='utf-8') as user:
@@ -406,7 +417,7 @@ def send_admin_mail1(message, id):
     bot.register_next_step_handler(message, main_win1)
 
 
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(func=lambda message: str(message.chat.id) != "-4707616830")
 def main_win(message):
     if reg_proof(str(message.chat.id)) == "logged":
         markup = types.ReplyKeyboardMarkup()
@@ -435,6 +446,7 @@ def main_win(message):
 
 
 def main_win1(message):
+    bot_trac(0, message)
     if str(message.text) in txt["btn"]["main_win"]:
         if message.text == str(txt["btn"]["main_win"][0]):
             with open("user.json", "r", encoding='utf-8') as user:
@@ -537,6 +549,7 @@ def main_win1(message):
                 bot.register_next_step_handler(message, unsub2)
     else:
         #нейро
+        bot_trac(0, message)
         if user_requests_upgrade(message) == "success":
             chat_gpt(message)
         bot.register_next_step_handler(message, main_win1)
@@ -640,7 +653,8 @@ def sub(message):
             btn1 = types.KeyboardButton(text=txt["btn"]["sub_success"])
             btn2 = types.KeyboardButton(text=txt["btn"]["sub_not_success"])
             markup.row(btn1, btn2)
-            bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl3_price"],message)), reply_markup=markup)
+            bot_trac(1, bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl3_price"],message)), reply_markup=markup))
+            
             bot.register_next_step_handler(message, sub1, sub_lvl = "3")
     else:
         bot.send_message(message.chat.id, text = txt["msg"]["sub_err"])
@@ -648,6 +662,7 @@ def sub(message):
 
 def sub1(message, sub_lvl):
     #condition = check_pay(str(message.chat.id))
+    bot_trac(0, message)
     condition = "meow"
     if message.text == "Оплачена":
         markup = types.ReplyKeyboardMarkup()
@@ -730,6 +745,7 @@ def send_mail(message):
     if str(message.text) in txt["btn"]["country"]:
         with open("user.json", 'r+', encoding='utf-8') as user:
             data = json.load(user)
+        bot_trac(0, message)
         bot.send_message(message.chat.id, text = txt["msg"]["mail_text"])
         bot.register_next_step_handler(message, send_mail1, id=data[str(message.text)])
     else:
@@ -746,6 +762,7 @@ def send_mail1(message, id):
     btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
     btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
     markup.row(btn4, btn5, btn6)
+    bot_trac(0, message)
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
     try:
         with open("user.json", "r", encoding='utf-8') as user:
