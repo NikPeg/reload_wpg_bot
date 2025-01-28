@@ -74,28 +74,34 @@ def check_subscription_status(subscription_id):
     except requests.exceptions.RequestException:
         return False
 
-def deactivate_order(subscription_id):
+def deactivate_order(order_id):
+
     api = cloudpayments.CloudPayments(PUBLIC_ID, API_SECRET)
     url = "https://api.cloudpayments.ru/orders/cancel"
+
     auth_str = f"{PUBLIC_ID}:{API_SECRET}"
     encoded_auth_str = base64.b64encode(auth_str.encode()).decode()
+
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Basic {encoded_auth_str}'
-                }
+    }
     data = {
-        'Id': subscription_id,
-            }
+        'Id': order_id,
+    }
+
     try:
-        response = requests.post(url, headers=headers, data = json.dumps(data))
+        response = requests.post(url, headers=headers, data=json.dumps(data))
         response.raise_for_status()
         response_data = response.json()
+
         if response_data.get('Success'):
             return True
         else:
             return False
     except requests.exceptions.RequestException:
         return False
+
 
 def sub_pay(amount, id, description="Оплата подписки", order_id=None, account_id=None):
     if not order_id:
@@ -124,7 +130,6 @@ def sub_pay(amount, id, description="Оплата подписки", order_id=No
         response_data = response.json()
 
         if response_data.get('Success'):
-            print(response_data)
             user_data_upgrade(id, "sub_id", response_data['Model']["Id"])
             return response_data['Model']['Url']
         else:
@@ -151,7 +156,6 @@ def check_pay(id):
         response = requests.post(url, headers=headers, data=json.dumps(data))
         response.raise_for_status()
         response_data = response.json()
-        print(response_data)
         if response_data.get('Success') and response_data['Model']['Status'] == "Active":
             if response_data['Model']['Amount'] == config_bd["sub_lvl2_price"]:
                 user_data_upgrade(id, "sub_lvl", 1)
@@ -173,11 +177,11 @@ def user_requests_upgrade(message):
         id = str(message.chat.id)
         now = datetime.datetime.now()
         req = data[id]["sub_lvl"]
-        if req == 1:
+        if int(req) == 1:
             req = 1
-        elif req == 2:
+        elif int(req) == 2:
             req = 5
-        elif req == 3:
+        elif int(req) == 3:
             req = 100500
         else:
             print("Плохо мне")
@@ -237,7 +241,6 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
                 user.seek(0)
                 json.dump(data, user, indent=4, ensure_ascii=False)
                 user.truncate()
-                bot.send_message(message.chat.id, text = txt["msg"]["sub_done"].format(sub_lvl=data[id][key]))
                 return "success"
             if key == "id_thread":
                 data[id][key] = value
@@ -261,7 +264,7 @@ def user_data_upgrade(message, key:str = "str please", value:str = "str please")
                 key:value,
                 "sub_lvl":"0",
                 "sub_id":"0",
-                "req":"0"
+                "req":[]
             }
             data[value] = id
             user.seek(0)
@@ -328,8 +331,52 @@ def handle_answer(message):
         btn8 = types.KeyboardButton(text=txt["btn"]["country"][7])
         btn9 = types.KeyboardButton(text=txt["btn"]["country"][8])
         markup.row(btn7, btn8, btn9)
-        bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
+        bot.send_message(message.chat.id, text = txt["msg"]["admin_mail"], reply_markup=markup)
         bot.register_next_step_handler(message, send_admin_mail)
+
+
+
+@bot.message_handler(commands=['unsub'])
+def unsub(message):
+    with open("user.json", "r", encoding='utf-8') as user:
+        user = json.load(user)
+    if str(message.chat.id) in user["admin_list"]:
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["country"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["country"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["country"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["country"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["country"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["country"][5])
+        markup.row(btn4, btn5, btn6)
+        btn7 = types.KeyboardButton(text=txt["btn"]["country"][6])
+        btn8 = types.KeyboardButton(text=txt["btn"]["country"][7])
+        btn9 = types.KeyboardButton(text=txt["btn"]["country"][8])
+        markup.row(btn7, btn8, btn9)
+        bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
+        bot.register_next_step_handler(message, unsub2)
+def unsub2(message):
+    with open("user.json", "r+", encoding='utf-8') as user:
+        data = json.load(user)
+        country = data[message.text]
+        if data[country] != 0:
+            del data[country]
+            data[message.text] = 0
+            user.seek(0)
+            json.dump(data, user, indent=4, ensure_ascii=False)
+            user.truncate()
+    bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub_done"])
+    markup = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text=txt["btn"]["start1"], url = txt["btn"]["start1_url"])
+    markup.add(btn1)
+    bot.send_message(message.chat.id, txt["msg"]["start1"] , reply_markup=markup)
+    markup = types.ReplyKeyboardMarkup()
+    btn2 = types.KeyboardButton(txt["btn"]["start2"])
+    markup.add(btn2)
+    bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
+    bot.register_next_step_handler(message, country_choose)
+
 def send_admin_mail(message):
     if str(message.text) in txt["btn"]["country"]:
         with open("user.json", 'r+', encoding='utf-8') as user:
@@ -450,7 +497,7 @@ def main_win1(message):
                 bot.send_photo(message.chat.id, photo, reply_markup=markup)
             bot.register_next_step_handler(message, sub)
     elif str(message.text) in txt["btn"]["admin_commands"]:
-        if message.text == "answer":
+        if message.text in ["answer","/answer"]:
             with open("user.json", "r", encoding='utf-8') as user:
                 user = json.load(user)
             if str(message.chat.id) in user["admin_list"]:
@@ -467,8 +514,27 @@ def main_win1(message):
                 btn8 = types.KeyboardButton(text=txt["btn"]["country"][7])
                 btn9 = types.KeyboardButton(text=txt["btn"]["country"][8])
                 markup.row(btn7, btn8, btn9)
-                bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
+                bot.send_message(message.chat.id, text = txt["msg"]["admin_mail"], reply_markup=markup)
                 bot.register_next_step_handler(message, send_admin_mail)
+        if message.text in ["unsub","/unsub"]:
+            with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+            if str(message.chat.id) in user["admin_list"]:
+                markup = types.ReplyKeyboardMarkup()
+                btn1 = types.KeyboardButton(text=txt["btn"]["country"][0])
+                btn2 = types.KeyboardButton(text=txt["btn"]["country"][1])
+                btn3 = types.KeyboardButton(text=txt["btn"]["country"][2])
+                markup.row(btn1, btn2, btn3)
+                btn4 = types.KeyboardButton(text=txt["btn"]["country"][3])
+                btn5 = types.KeyboardButton(text=txt["btn"]["country"][4])
+                btn6 = types.KeyboardButton(text=txt["btn"]["country"][5])
+                markup.row(btn4, btn5, btn6)
+                btn7 = types.KeyboardButton(text=txt["btn"]["country"][6])
+                btn8 = types.KeyboardButton(text=txt["btn"]["country"][7])
+                btn9 = types.KeyboardButton(text=txt["btn"]["country"][8])
+                markup.row(btn7, btn8, btn9)
+                bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
+                bot.register_next_step_handler(message, unsub2)
     else:
         #нейро
         if user_requests_upgrade(message) == "success":
@@ -548,7 +614,6 @@ def country_choose2(message):
 def sub(message):
     if str(message.text) in txt["btn"]["sub"]:
         if str(message.text) == txt["btn"]["sub"][0]:
-            user_data_upgrade(message, "sub_lvl", 1)
             markup = types.ReplyKeyboardMarkup()
             btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
             btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
@@ -564,24 +629,26 @@ def sub(message):
             bot.register_next_step_handler(message, main_win1)
         if str(message.text) == txt["btn"]["sub"][1]:
             markup = types.ReplyKeyboardMarkup()
-            btn1 = types.KeyboardButton(text=txt["btn"]["sub_found"])
-            markup.row(btn1)
+            btn1 = types.KeyboardButton(text=txt["btn"]["sub_success"])
+            btn2 = types.KeyboardButton(text=txt["btn"]["sub_not_success"])
+            markup.row(btn1, btn2)
             bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl2_price"],message)), reply_markup=markup)
-            bot.register_next_step_handler(message, sub1)
+            bot.register_next_step_handler(message, sub1, sub_lvl = "2")
         if str(message.text) == txt["btn"]["sub"][2]:
             markup = types.ReplyKeyboardMarkup()
-            btn1 = types.KeyboardButton(text=txt["btn"]["sub_found"])
-            markup.row(btn1)
+            btn1 = types.KeyboardButton(text=txt["btn"]["sub_success"])
+            btn2 = types.KeyboardButton(text=txt["btn"]["sub_not_success"])
+            markup.row(btn1, btn2)
             bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = sub_pay(config_bd["sub_lvl3_price"],message)), reply_markup=markup)
-            bot.register_next_step_handler(message, sub1)
+            bot.register_next_step_handler(message, sub1, sub_lvl = "3")
     else:
         bot.send_message(message.chat.id, text = txt["msg"]["sub_err"])
-        print("meow")
         bot.register_next_step_handler(message, main_win1)
 
-def sub1(message):
-    condition = check_pay(str(message.chat.id))
-    if condition == False:
+def sub1(message, sub_lvl):
+    #condition = check_pay(str(message.chat.id))
+    condition = "meow"
+    if message.text == "Оплачена":
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
         btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
@@ -591,8 +658,44 @@ def sub1(message):
         btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
         btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
         markup.row(btn4, btn5, btn6)
+        with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+        user_data_upgrade(message, "sub_lvl", sub_lvl)
+        bot.send_message(message.chat.id, text = txt["msg"]["sub_check_found"].format(sub_lvl=sub_lvl), reply_markup=markup)
+        bot.register_next_step_handler(message, main_win1)
+    elif message.text == "Не оплачена":
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+        markup.row(btn4, btn5, btn6)
+        with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+        deactivate_order(user[str(message.chat.id)]["sub_id"])
         bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup=markup)
-    if condition == True:
+        bot.register_next_step_handler(message, main_win1)
+
+    elif condition == False:
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+        markup.row(btn4, btn5, btn6)
+        with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+        deactivate_order(user[str(message.chat.id)]["sub_id"])
+        bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup=markup)
+        bot.register_next_step_handler(message, main_win1)
+
+    elif condition == True:
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
         btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
@@ -603,7 +706,22 @@ def sub1(message):
         btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
         markup.row(btn4, btn5, btn6)
         bot.send_message(message.chat.id, text = txt["msg"]["sub_check_found"], reply_markup=markup)
-    
+        bot.register_next_step_handler(message, main_win1)
+    else:
+        markup = types.ReplyKeyboardMarkup()
+        btn1 = types.KeyboardButton(text=txt["btn"]["main_win"][0])
+        btn2 = types.KeyboardButton(text=txt["btn"]["main_win"][1])
+        btn3 = types.KeyboardButton(text=txt["btn"]["main_win"][2])
+        markup.row(btn1, btn2, btn3)
+        btn4 = types.KeyboardButton(text=txt["btn"]["main_win"][3])
+        btn5 = types.KeyboardButton(text=txt["btn"]["main_win"][4])
+        btn6 = types.KeyboardButton(text=txt["btn"]["main_win"][5])
+        markup.row(btn4, btn5, btn6)
+        with open("user.json", "r", encoding='utf-8') as user:
+                user = json.load(user)
+        deactivate_order(user[str(message.chat.id)]["sub_id"])
+        bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup=markup)
+        bot.register_next_step_handler(message, main_win1)
 
 
     
@@ -636,13 +754,9 @@ def send_mail1(message, id):
         pass
     bot.register_next_step_handler(message, main_win1)
 
-def news():
-    while True:
-        time.sleep(6000) 
-        send_daily_message()
+
 def bot_polling():
     bot.polling(none_stop=True)   
-
 def send_daily_message():
     with open("user.json", "r", encoding='utf-8') as user:
         user = json.load(user)
@@ -659,14 +773,13 @@ def send_daily_message():
         user.seek(0)
         json.dump(data, user, indent=4, ensure_ascii=False)
         user.truncate()
-schedule.every().day.at("19:53").do(send_daily_message)
 
 
+schedule.every().day.at(config_bd["news_time"]).do(send_daily_message)
 if __name__ == '__main__':
     bot_thread = threading.Thread(target=bot_polling)
     bot_thread.start()
-    news_thread = threading.Thread(target=news)
-    news_thread.start()
-    print("чет робит")
+    print("Бот запущен")
     while True:
-        pass
+        schedule.run_pending() 
+        time.sleep(1)
