@@ -625,6 +625,7 @@ def sub(message):
             markup.row(btn4, btn5, btn6)
             with open("user.json", "r", encoding='utf-8') as user:
                 user = json.load(user)
+            user_data_upgrade(message, "sub_lvl", "1")
             bot.send_message(message.chat.id, text = txt["msg"]["main_win"].format(name=str(message.from_user.first_name), country=str(user[str(message.chat.id)]["country"])), reply_markup=markup)
             bot.register_next_step_handler(message, main_win1)
         if str(message.text) == txt["btn"]["sub"][1]:
