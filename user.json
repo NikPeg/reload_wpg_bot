@@ -1,23 +1,22 @@
 {
-    "admin_list": [
-        "1433319219"
-    ],
-    "Инферия": 0,
-    "Мордор": "1433319219",
-    "Рамондана": 0,
-    "Хуан-Фернандес": 0,
-    "ГСКСР": 0,
-    "Лурк": 0,
-    "ФТК": 0,
-    "Шайервуд": 0,
-    "Британия": 0,
-    "current_data": "2658",
     "1433319219": {
-        "nickname": "HACER777BEBRA",
-        "id_thread": "thread_mRqsosEsZ0xxHUGKSzrGy88z",
         "country": "Мордор",
-        "sub_lvl": "2",
-        "sub_id": "kgs76SkO1F7WLkMa",
-        "req": []
+        "sub_lvl": "1",
+        "sub_id": 0,
+        "id_thread": "thread_ZunExsRFXxuHY6njHEFleBZj",
+        "req": [
+            "2025-03-01T21:50:11.236228"
+        ],
+        "projects": {}
+    },
+    "241248104": {
+        "country": "Лурк",
+        "sub_lvl": "1",
+        "sub_id": "V03oSO3gSLlp1AwN",
+        "id_thread": "thread_XLbVb6cIdCwI2z79eVBLcoEP",
+        "req": [
+            "2025-03-01T22:58:27.019569"
+        ],
+        "projects": {}
     }
 }

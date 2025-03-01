@@ -1,0 +1,119 @@
+{
+    "Инферия": {
+        "id": 0,
+        "GDP": [
+            750
+        ],
+        "population": [
+            9
+        ],
+        "rating_government": [
+            95
+        ]
+    },
+    "Мордор": {
+        "id": "1433319219",
+        "GDP": [
+            250,
+            263,
+            230,
+            220
+        ],
+        "population": [
+            12,
+            12,
+            10,
+            9
+        ],
+        "rating_government": [
+            20,
+            18,
+            30,
+            40
+        ]
+    },
+    "Рамондана": {
+        "id": 0,
+        "GDP": [
+            150
+        ],
+        "population": [
+            8
+        ],
+        "rating_government": [
+            10
+        ]
+    },
+    "Хуан-Фернандес": {
+        "id": 0,
+        "GDP": [
+            900
+        ],
+        "population": [
+            5
+        ],
+        "rating_government": [
+            30
+        ]
+    },
+    "ГСКСР": {
+        "id": 0,
+        "GDP": [
+            100
+        ],
+        "population": [
+            15
+        ],
+        "rating_government": [
+            50
+        ]
+    },
+    "Лурк": {
+        "id": "241248104",
+        "GDP": [
+            800
+        ],
+        "population": [
+            4
+        ],
+        "rating_government": [
+            80
+        ]
+    },
+    "ФТК": {
+        "id": 0,
+        "GDP": [
+            300
+        ],
+        "population": [
+            18
+        ],
+        "rating_government": [
+            60
+        ]
+    },
+    "Шайервуд": {
+        "id": 0,
+        "GDP": [
+            50
+        ],
+        "population": [
+            7
+        ],
+        "rating_government": [
+            5
+        ]
+    },
+    "Британия": {
+        "id": 0,
+        "GDP": [
+            500
+        ],
+        "population": [
+            20
+        ],
+        "rating_government": [
+            70
+        ]
+    }
+}
