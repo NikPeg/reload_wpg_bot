@@ -4,8 +4,8 @@
     "tg_token":"5265471775:AAFv_g6lJE_B0TeJYzSKel6lUOS5dWQvYK4",
     "PAYMENTS_ID":"pk_eef5c57dd31eab7214ae1801f9130",
     "PAYMENTS_TOKEN":"c623944e9c4b77af4faeb0bab77bb59c",
-    "sub_lvl2_price":450,
-    "sub_lvl3_price":950,
+    "sub_lvl2_price":1,
+    "sub_lvl3_price":2,
     "sub_lvl_req_max_1":1,
     "sub_lvl_req_max_2":5,
     "sub_lvl_req_max_3":100500,
@@ -23,7 +23,8 @@
     "universal":"asst_jYiRMh6JgD8wbrNYlSeqwFfV",
     "admin_list":[
         "1433319219",
-        "241248104"
+        "241248104",
+        "-4707616830"
     ]
 }
 
