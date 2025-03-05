@@ -68,13 +68,6 @@ def send_admin_mail2(message, recipient):
     except:
         pass
 
-@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text == "answer")
-def handle_answer(message):
-    with open("user.json", "r", encoding='utf-8') as user:
-        user = json.load(user)
-    markup = btn.country_list()
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mail"], reply_markup=markup)
-    bot.register_next_step_handler(message, send_admin_mail)
 
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["unsub", "/unsub"])
@@ -356,7 +349,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id=" ")
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
