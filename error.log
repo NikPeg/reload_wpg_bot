@@ -1,0 +1,7 @@
+2025-03-04 21:49:20,191 - ERROR - Произошла ошибка: AttributeError - 'NoneType' object has no attribute 'replace'
+Traceback (most recent call last):
+  File "c:\My_project\RELOAD_0_1\main.py", line 340, in to_gpt
+    json_string = text.replace("json", "")
+                  ^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'replace'
+

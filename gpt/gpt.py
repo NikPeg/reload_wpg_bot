@@ -63,10 +63,20 @@ def chat_gpt(thread, text:str, assist_id = "1"):
         role="user",
         content=text
     )
-    run = openai.beta.threads.runs.create(
-        thread_id=thread,
-        assistant_id=assist_id
-    )
+    try:
+        run = openai.beta.threads.runs.create(
+            thread_id=thread,
+            assistant_id=assist_id
+        )
+    except:
+        try:
+            time.sleep(3)
+            run = openai.beta.threads.runs.create(
+                thread_id=thread,
+                assistant_id=assist_id
+            )
+        except:
+            return None
     while True:
         run_status = openai.beta.threads.runs.retrieve(thread_id=thread, run_id=run.id).status
         if run_status == "completed":
@@ -80,6 +90,9 @@ def chat_gpt(thread, text:str, assist_id = "1"):
         for content_item in last_assistant_message.content:
             if content_item.type == "text":
                 return content_item.text.value
+
+
+
 
 def country_report(thread_id, assist_id, country, text):
     data = {

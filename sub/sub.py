@@ -2,9 +2,7 @@ import requests
 import uuid
 import base64
 import json
-import cloudpayments
 import os
-import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 user_path = os.path.join(current_dir, "..", "user.json")
 config_path = os.path.join(current_dir, "..", "config.json")

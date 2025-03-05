@@ -23,14 +23,20 @@ def user_requests_upgrade(id: str):
             if (now - datetime.datetime.fromisoformat(req_time)).days < 1
         ]
         if len(data[str(id)]["req"]) < max_req:
-            data[id]["req"].append(now.isoformat())
-            ufile.seek(0)
-            json.dump(data, ufile, indent=4, ensure_ascii=False)
-            ufile.truncate()
             return True
         else:
             return False
 
+def user_new_requests(id: str):
+    id = str(id)
+    with open(user_path, 'r+', encoding='utf-8') as ufile:
+        data = json.load(ufile)
+        now = datetime.datetime.now()
+        data[id]["req"].append(now.isoformat())
+        ufile.seek(0)
+        json.dump(data, ufile, indent=4, ensure_ascii=False)
+        ufile.truncate()
+        return 
 
 def is_logged(id:str = "str please"):
     with open(user_path, 'r+', encoding='utf-8') as ufile:
@@ -213,4 +219,5 @@ def get_photo(photo:str):
 
 
 if __name__ == "__main__":
-    print(get_graph_history("Инферия"))
+    print(user_requests_upgrade("6532830698"))
+    user_new_requests("6532830698")

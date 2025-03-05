@@ -2,14 +2,8 @@ import json
 import openai
 import telebot
 import time
-import os
 import schedule
-import datetime
 import threading
-import cloudpayments
-import requests
-import uuid
-import base64
 import btn
 import bd
 import gpt
@@ -18,6 +12,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import io
 import numpy as np
+import logging
+import traceback 
+
+logging.basicConfig(filename="error.log", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+
 
 with open("config.json", "r", encoding='utf-8') as config:
     config_bd = json.load(config)
@@ -32,6 +33,10 @@ with open("messages.json", "r", encoding='utf-8') as messages:
 def bot_trac(message):
         if DEBUG:
             bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
+
+@bot.message_handler(func=lambda message: message.chat.id == -4707616830)
+def i_hate(message):
+    pass
 
 
 @bot.message_handler(func=lambda message: bd.is_logged(str(message.chat.id)))
@@ -185,7 +190,7 @@ def send_mail2(message, recipient):
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
         bot_trac(message)
-    except ValueError:
+    except:
         pass
 
 
@@ -215,12 +220,21 @@ def send_graphics(message):
     data = bd.get_graph_history(user[str(message.chat.id)]["country"])
     for key in data:
         y_values = data[key]
-        x_values = np.arange(2560, 2560 + len(y_values))
+        x_values = np.arange(2650, 2650 + len(y_values))
         plt.figure(figsize=(8, 6))
         plt.plot(x_values, y_values, marker='o')  
-        plt.xlabel("X (Итерация)")
-        plt.ylabel("Y (Значение)")
-        plt.title(key)
+        plt.xlabel("Год")
+        if key == "GDP":
+            y_text = "Миллионы пряности"
+            name = "ВВП"
+        if key == "population":
+            y_text = "Миллион человек"
+            name = "Население"
+        if key == "rating_government":
+            y_text = "% от общего населения"
+            name = "Процент поддержки правительства"
+        plt.ylabel(y_text)
+        plt.title(name)
         plt.grid(True)  
         formatter = ticker.FuncFormatter(lambda x, pos: f"{int(x)}")
         plt.gca().xaxis.set_major_formatter(formatter)
@@ -293,12 +307,11 @@ def send_admin_mail1(message):
 def send_admin_mail2(message, recipient): 
     markup = btn.main_menu()
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
-    
     try:
         with open("user.json", "r", encoding='utf-8') as user:
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
-    except ValueError:
+    except:
         pass
 
 
@@ -322,12 +335,23 @@ def to_gpt(message):
         data = json.load(user)
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
-    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
-    json_string = text.replace("json", "")
-    json_string = json_string.replace("```", "").strip()
-    json_string = json.loads(json_string)
+    try:
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
+        json_string = text.replace("json", "")
+        json_string = json_string.replace("```", "").strip()
+        json_string = json.loads(json_string)
+        bd.user_new_requests(str(message.chat.id))
+    except Exception as e:
+                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+                print("Произошла ошибка. Подробности записаны в error.log")
+                return
+    if json_string["Результат приказа"] == "strange":
+        message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
+        bot_trac(message)
+        return
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = json_string["Результат приказа"])
     bot_trac(for_edit)
+    
     if json_string["Срок реализации"] != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= "asst_qTNw4fBtCWneSa0fokdyG57J", country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
@@ -367,31 +391,40 @@ def new_year():
             with open("user.json", 'r+', encoding='utf-8') as user:
                 data = json.load(user)
             user_thread = data[str(id)]["id_thread"]
-            graph = gpt.chat_gpt(thread = user_thread, text = str(bd.get_graph_history(country)), assist_id="asst_G0Jb4ayVPJKCc0iYdM5fmkxY")
-            print(graph)
-            json_string = graph.replace("json", "")
-            json_string = json_string.replace("```", "").strip()
-            graph = json.loads(json_string)
-            bd.mod_graph(country, graph)
+            try:
+                graph = gpt.chat_gpt(thread = user_thread, text = str(bd.get_graph_history(country)), assist_id="asst_G0Jb4ayVPJKCc0iYdM5fmkxY")
+                json_string = graph.replace("json", "")
+                json_string = json_string.replace("```", "").strip()
+                graph = json.loads(json_string)
+                bd.mod_graph(country, graph)
+            except Exception as e:
+                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+                print("Произошла ошибка. Подробности записаны в error.log")
             time.sleep(1)
-            text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
-            json_string = text.replace("json", "")
-            json_string = json_string.replace("```", "").strip()
-            text = json.loads(json_string)
-            message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {text["Результат приказа"]}")
-            bot_trac(message)
-            
-
+            try:
+                text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
+                json_string = text.replace("json", "")
+                json_string = json_string.replace("```", "").strip()
+                text = json.loads(json_string)
+                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {text["Результат приказа"]}")
+                bot_trac(message)
+            except Exception as e:
+                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+                print("Произошла ошибка. Подробности записаны в error.log")
             if len(user_list[str(id)]["projects"]) > 0:
                 for proj in user_list[str(id)]["projects"]:
                     if int(proj) <= int(year):
-                        text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id="asst_DEHzPlgdcP8PiXaDAq2AJUDd")
-                        json_string = text.replace("json", "")
-                        json_string = json_string.replace("```", "").strip()
-                        text = json.loads(json_string)
-                        message = bot.send_message(id, text = text["Результат проекта"])
-                        bot_trac(message)
-                        bd.del_proj(str(id), proj)
+                        try:
+                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id="asst_DEHzPlgdcP8PiXaDAq2AJUDd")
+                            json_string = text.replace("json", "")
+                            json_string = json_string.replace("```", "").strip()
+                            text = json.loads(json_string)
+                            message = bot.send_message(id, text = text["Результат проекта"])
+                            bot_trac(message)
+                            bd.del_proj(str(id), proj)
+                        except Exception as e:
+                            logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+                            print("Произошла ошибка. Подробности записаны в error.log")
     return year
 
 
