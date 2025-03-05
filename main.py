@@ -349,7 +349,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
@@ -358,16 +358,14 @@ def to_gpt(message):
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
                 return
-    print(json_string)
-    res = list(json_string.values())[0] if json_string.values() else "strange"
-    if res == "strange":
+    if json_string["Результат приказа"] == "strange":
         message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
         bot_trac(message)
         return
-    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = res)
+    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = json_string["Результат приказа"])
     bot_trac(for_edit)
     
-    if json_string.get("Срок реализации", 0) != 0:
+    if json_string["Срок реализации"] != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= "asst_qTNw4fBtCWneSa0fokdyG57J", country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
     bot.send_message(-4707616830, text = text)
