@@ -34,6 +34,65 @@ def bot_trac(message):
         if DEBUG:
             bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
 
+
+
+@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["new_year", "/new_year"])
+def admin_new_year(message):
+    year = new_year()
+    markup = btn.main_menu()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_new_year"].format(year = year), reply_markup=markup)
+
+@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["answer", "/answer"])
+def send_admin_mail(message):
+    markup = btn.country_list() 
+    message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
+    bot.register_next_step_handler(message, send_admin_mail1)
+def send_admin_mail1(message):
+    if message.text in txt["btn"]["country"]:
+        with open("country.json", 'r+', encoding='utf-8') as user:
+            data = json.load(user)
+        country = message.text
+        message = bot.send_message(message.chat.id, text = txt["msg"]["mail_text"])
+        bot.register_next_step_handler(message, send_admin_mail2, recipient=data[country]["id"])
+    else:
+        markup = btn.country_list() 
+        message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
+        bot.register_next_step_handler(message, send_admin_mail1)
+def send_admin_mail2(message, recipient): 
+    markup = btn.main_menu()
+    bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
+    try:
+        with open("user.json", "r", encoding='utf-8') as user:
+            user = json.load(user)
+        message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
+    except:
+        pass
+
+@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text == "answer")
+def handle_answer(message):
+    with open("user.json", "r", encoding='utf-8') as user:
+        user = json.load(user)
+    markup = btn.country_list()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mail"], reply_markup=markup)
+    bot.register_next_step_handler(message, send_admin_mail)
+
+
+@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["unsub", "/unsub"])
+def unsub(message):
+    markup = btn.country_list()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
+    bot.register_next_step_handler(message, unsub2)
+
+def unsub2(message):
+    with open("country.json", "r+", encoding='utf-8') as file:
+        data = json.load(file)
+    bd.del_user(data[message.text]["id"])
+    markup = btn.main_menu()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
+    bot.register_next_step_handler(message, country_choose)
+
+
+
 @bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
@@ -47,7 +106,7 @@ def new_user(message):
     message = bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
-@bot.message_handler(func=lambda message: "страна" in message.text.lower())
+@bot.message_handler(func=lambda message: "  " in message.text.lower())
 def country_choose(message):
     bot_trac(message)
     markup = btn.country_list()
@@ -174,6 +233,7 @@ def send_mail(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
     bot_trac(message)
     bot.register_next_step_handler(message, send_mail1)
+
 def send_mail1(message):
     bot_trac(message)
     if message.text in txt["btn"]["country"]:
@@ -188,6 +248,7 @@ def send_mail1(message):
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
         bot_trac(message)
         bot.register_next_step_handler(message, send_mail1)
+
 def send_mail2(message, recipient): 
     bot_trac(message)
     markup = btn.main_menu()
@@ -277,64 +338,9 @@ def map_change(message):
     bd.change_photo(message.caption.lower(), message.photo[-1].file_id)
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
 
-@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text == "answer")
-def handle_answer(message):
-    with open("user.json", "r", encoding='utf-8') as user:
-        user = json.load(user)
-    markup = btn.country_list()
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mail"], reply_markup=markup)
-    bot.register_next_step_handler(message, send_admin_mail)
-
-
-@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["unsub", "/unsub"])
-def unsub(message):
-    markup = btn.country_list()
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
-    bot.register_next_step_handler(message, unsub2)
-
-def unsub2(message):
-    with open("country.json", "r+", encoding='utf-8') as file:
-        data = json.load(file)
-    bd.del_user(data[message.text]["id"])
-    markup = btn.main_menu()
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
-    bot.register_next_step_handler(message, country_choose)
 
 
 
-@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["answer", "/answer"])
-def send_admin_mail(message):
-    markup = btn.country_list() 
-    message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
-    bot.register_next_step_handler(message, send_admin_mail1)
-def send_admin_mail1(message):
-    if message.text in txt["btn"]["country"]:
-        with open("country.json", 'r+', encoding='utf-8') as user:
-            data = json.load(user)
-        country = message.text
-        message = bot.send_message(message.chat.id, text = txt["msg"]["mail_text"])
-        bot.register_next_step_handler(message, send_admin_mail2, recipient=data[country]["id"])
-    else:
-        markup = btn.country_list() 
-        message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
-        bot.register_next_step_handler(message, send_admin_mail1)
-def send_admin_mail2(message, recipient): 
-    markup = btn.main_menu()
-    bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
-    try:
-        with open("user.json", "r", encoding='utf-8') as user:
-            user = json.load(user)
-        message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
-    except:
-        pass
-
-
-
-@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["new_year", "/new_year"])
-def admin_new_year(message):
-    year = new_year()
-    markup = btn.main_menu()
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_new_year"].format(year = year), reply_markup=markup)
 
 @bot.message_handler(func=lambda message: len(message.text.split()) == 1)
 def unknow_command(message):
@@ -350,7 +356,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id=" ")
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
