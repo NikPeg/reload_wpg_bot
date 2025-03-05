@@ -56,7 +56,7 @@ def new_assist():
     return assistant
 
 
-def chat_gpt(thread, text:str, assist_id = "1"):
+def chat_gpt(thread, text: str, assist_id="1"):
     assist_id = assist_id
     openai.beta.threads.messages.create(
         thread_id=thread,
@@ -82,14 +82,20 @@ def chat_gpt(thread, text:str, assist_id = "1"):
         if run_status == "completed":
             break
         elif run_status == "failed":
-            return  "failed"
+            return "failed"
         time.sleep(1)
-    messages = openai.beta.threads.messages.list(thread_id=thread, order="asc")
-    last_assistant_message = next((msg for msg in reversed(messages.data) if msg.role == "assistant"), None)
-    if last_assistant_message:
-        for content_item in last_assistant_message.content:
-            if content_item.type == "text":
-                return content_item.text.value
+    try:
+        messages = openai.beta.threads.messages.list(thread_id=thread, order="desc", limit=1)
+        if messages.data:
+            last_message = messages.data[0] # Самое последнее сообщение
+            if last_message.role == "assistant": # проверяем роль
+                if last_message.content:
+                    for content_item in last_message.content:
+                        if content_item.type == "text":
+                            return content_item.text.value
+    except Exception as e: # Обрабатываем ошибки
+        print(f"Ошибка при получении сообщения: {e}")
+        return None
 
 
 
@@ -153,9 +159,9 @@ def country_report(thread_id, assist_id, country, text):
                 return content_item.text.value
 
 if __name__ == "__main__":
-    text = new_assist()
+    #text = new_assist()
     # text = chat_gpt(thread = "thread_P67niks6tc70bVcHYFX7PWPk", text = f""" "GDP": [750, 800, 860], "population": [9,10,9],"rating_government": [95,90,93]" """, assist_id="asst_kDUKu8X0XuiHG06XyJsXA4nO")
-    #text = chat_gpt(thread = "thread_SOJeXKOSD5I3EpeyyfNUA1Xl", text = f"Приказываю напасть на лурк", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
+    text = chat_gpt(thread = "thread_Y9vnu2DOBeDjCdgZS1RIfT6m", text = f"требую построить шаурмечную", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
     print(text)
     #text = country_report("thread_5aSqLgWWRAok4gqmqW0JXItY", "asst_qTNw4fBtCWneSa0fokdyG57J", "Лурк", "приказываю запретить фтк вести торговую деятельность")
     #print(text)

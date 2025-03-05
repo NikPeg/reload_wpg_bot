@@ -159,7 +159,15 @@ def sub3(message):
         bot_trac(message)
 
 
-@bot.message_handler(func=lambda message: "телеграмма" in message.text.lower())
+
+@bot.message_handler(func=lambda message: "телеграмма" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 2))
+def send_graphics_without_perm(message):
+    markup = btn.main_menu()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_2"], reply_markup=markup)
+    bot_trac(message)
+
+
+@bot.message_handler(func=lambda message: "телеграмма" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 2))
 def send_mail(message):
     bot_trac(message)
     markup = btn.country_list() 
@@ -213,7 +221,13 @@ def project(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["proj_list"].format(text = text), reply_markup=markup)
     bot_trac(message)
 
-@bot.message_handler(func=lambda message: "графики" in message.text.lower())
+@bot.message_handler(func=lambda message: "графики" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 3))
+def send_graphics_without_perm(message):
+    markup = btn.main_menu()
+    message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_3"], reply_markup=markup)
+    bot_trac(message)
+
+@bot.message_handler(func=lambda message: "графики" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics(message):
     with open("user.json", "r", encoding='utf-8') as user:
         user = json.load(user)

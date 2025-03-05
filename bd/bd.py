@@ -55,6 +55,17 @@ def new_year():
         cfile.truncate()
     return data["year"]
 
+def perm_for_command(id, sub_lvl):
+    with open(user_path, 'r+', encoding='utf-8') as cfile:
+        data = json.load(cfile)
+        if int(data[str(id)]["sub_lvl"]) >= int(sub_lvl):
+            return True
+        else: 
+            return False
+            
+            
+
+
 
 def country_upgrade(id:str = "str please", country: str = "meow"):
     new_user = True
