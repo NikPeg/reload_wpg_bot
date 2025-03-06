@@ -4,3 +4,4 @@ user.json
 country.json
 year.json
 picture.json
+*.log
