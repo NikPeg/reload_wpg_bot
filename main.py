@@ -18,11 +18,11 @@ import traceback
 logging.basicConfig(filename="error.log", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 msg_path = "messages.json"
-country_path = "country.gitignore"
-user_path = "user.gitignore"
-config_path = "config.gitignore"
-year_path = "year.gitignore"
-picture_path = "picture.gitignore"
+country_path = "country.json"
+user_path = "user.json"
+config_path = "config.json"
+year_path = "year.json"
+picture_path = "picture.json"
 
 
 

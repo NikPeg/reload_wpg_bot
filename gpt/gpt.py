@@ -4,9 +4,9 @@ import os
 import time 
 import random
 current_dir = os.path.dirname(os.path.abspath(__file__))
-user_path = os.path.join(current_dir, "..", "user.gitignore")
-config_path = os.path.join(current_dir, "..", "config.gitignore")
-country_path = os.path.join(current_dir, "..", "country.gitignore")
+user_path = os.path.join(current_dir, "..", "user.json")
+config_path = os.path.join(current_dir, "..", "config.json")
+country_path = os.path.join(current_dir, "..", "country.json")
 with open(config_path, 'r+', encoding='utf-8') as cfile:
         config_bd = json.load(cfile)
 openai.api_key = config_bd["chatGPT_token"]
