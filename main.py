@@ -68,9 +68,9 @@ def send_admin_mail2(message, recipient):
     markup = btn.main_menu()
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
     try:
-        with open(user_path, "r", encoding='utf-8') as user:
-            user = json.load(user)
-        message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
+        with open(user_path, "r", encoding='utf-8') as user1:
+            user = json.load(user1)
+        message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[recipient]["country"]), text = message.text)) 
     except:
         pass
 
