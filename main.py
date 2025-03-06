@@ -84,11 +84,34 @@ def unsub2(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
+@bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["mailing", "/mailing"])
+def mailing(message):
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mailing"])
+    bot.register_next_step_handler(message, mailing1)
+def mailing1(message):
+    with open("country.json", "r+", encoding='utf-8') as file:
+        data = json.load(file)
+        for country in data:
+            leader = data[country]["id"]
+            if leader == 0:
+                pass
+            else:
+                message = bot.send_message(leader, text = message.text)
+                bot.send_message(chat_id = -4707616830, text = f"Отправлено в {country}")
+
+@bot.message_handler(content_types=['photo'], func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.caption is not None and message.caption.lower() in ["map", "/map"])
+def map_change(message):
+    bot_trac(message)
+    bd.change_photo(message.caption.lower(), message.photo[-1].file_id)
+    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
+
 
 
 @bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
+
+
 
 
 @bot.message_handler(func=lambda message: bd.is_logged(str(message.chat.id)))
@@ -138,7 +161,7 @@ def country_choose2(message):
                 bot.send_photo(message.chat.id, photo, reply_markup=markup)
             message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(name=str(message.from_user.first_name), country=message.text), reply_markup=markup)
             bot_trac(message)
-            bot.register_next_step_handler(message, sub2)
+            bot.register_next_step_handler(message, sub2, new_user=True)
     else:
         markup = btn.country_list()
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup=markup)
@@ -150,7 +173,7 @@ def sub1(message):
     markup = btn.sub()
     bot.send_photo(message.chat.id, bd.get_photo("sub"), reply_markup=markup)
     bot.register_next_step_handler(message, sub2)
-def sub2(message):
+def sub2(message, new_user = False):
     if message.text in txt["btn"]["sub"]:
         if message.text.lower() == "i уровень":
             bot_trac(message)
@@ -158,6 +181,9 @@ def sub2(message):
             bd.sub_lvl_upgrade(str(message.chat.id), "1")
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub_done"].format(sub_lvl = "1"), reply_markup = markup)
             bot_trac(message)
+            if new_user:
+                message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
+            
         if message.text.lower() == "ii уровень":
             bot_trac(message)
             markup = btn.sub_check()
@@ -166,7 +192,7 @@ def sub2(message):
             bd.sub_id_upgrade(str(message.chat.id), order.get('Id'))
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = order.get('Url')), reply_markup = markup)
             bot_trac(message)
-            bot.register_next_step_handler(message, sub3)
+            bot.register_next_step_handler(message, sub3, new_user)
         if message.text.lower() == "iii уровень":
             bot_trac(message)
             markup = btn.sub_check()
@@ -175,13 +201,17 @@ def sub2(message):
             bd.sub_id_upgrade(str(message.chat.id), order.get('Id'))
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub"].format(url = order.get('Url')), reply_markup = markup)
             bot_trac(message)
-            bot.register_next_step_handler(message, sub3)
+            bot.register_next_step_handler(message, sub3, new_user)
     else:
         bot_trac(message)
         markup = btn.main_menu()
         message = bot.send_message(message.chat.id, text = txt["msg"]["sub_err"], reply_markup = markup)
         bot_trac(message)
-def sub3(message):
+        if new_user:
+            message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
+            
+
+def sub3(message, new_user):
     bot_trac(message)
     cheque = sub.sub_check(str(message.chat.id))
     if cheque != False:
@@ -191,24 +221,32 @@ def sub3(message):
             markup = btn.main_menu()
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub_check_found"].format(sub_lvl = "2"), reply_markup = markup)
             bot_trac(message)
+            if new_user:
+                message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
         elif cheque[0] == config_bd["sub_lvl3_price"]:
             bd.sub_id_upgrade(str(message.chat.id), cheque[1])
             bd.sub_lvl_upgrade(str(message.chat.id), '3')
             markup = btn.main_menu()
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub_check_found"].format(sub_lvl = "3"), reply_markup = markup)
             bot_trac(message)
+            if new_user:
+                message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
         else: 
             order_id = bd.get(str(message.chat.id), "sub_id")
             sub.deactivate_order(order_id)
             markup = btn.main_menu()
             message = bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup = markup)
             bot_trac(message)
+            if new_user:
+                message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
     else:
         order_id = bd.get(str(message.chat.id), "sub_id")
         sub.deactivate_order(order_id)
         markup = btn.main_menu()
         message = bot.send_message(message.chat.id, text = txt["msg"]["sub_check_not_found"], reply_markup = markup)
         bot_trac(message)
+        if new_user:
+                message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
 
 
 
@@ -269,7 +307,7 @@ def project(message):
     i = 1
     for proj, order in user[str(message.chat.id)]["projects"].items():
         order = " ".join(order.split()[:10])
-        text = text + f"\n{i}. {order}\nДата окончания: {proj} год"
+        text = text + f"\n{i}. {order}...\nДата окончания: {proj} год"
         i += 1
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["proj_list"].format(text = text), reply_markup=markup)
@@ -324,15 +362,6 @@ def send_map(message):
     markup = btn.main_menu()
     bot.send_photo(message.chat.id, bd.get_photo("map"))
     bot.send_photo(message.chat.id, bd.get_photo("land_form"), reply_markup=markup)
-
-@bot.message_handler(content_types=['photo'], func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.caption is not None and message.caption.lower() in ["map", "/map"])
-def map_change(message):
-    bot_trac(message)
-    bd.change_photo(message.caption.lower(), message.photo[-1].file_id)
-    message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
-
-
-
 
 
 @bot.message_handler(func=lambda message: len(message.text.split()) == 1)
