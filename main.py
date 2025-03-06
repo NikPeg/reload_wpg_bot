@@ -99,7 +99,7 @@ def new_user(message):
     message = bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
-@bot.message_handler(func=lambda message: "  " in message.text.lower())
+@bot.message_handler(func=lambda message: "страна" in message.text.lower())
 def country_choose(message):
     bot_trac(message)
     markup = btn.country_list()
@@ -349,7 +349,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id=config_bd["user_event_handler"])
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
@@ -367,7 +367,7 @@ def to_gpt(message):
     
     if json_string["Срок реализации"] != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
-    text = gpt.country_report(thread_id=user_thread, assist_id= "asst_qTNw4fBtCWneSa0fokdyG57J", country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
+    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
     bot.send_message(-4707616830, text = text)
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
@@ -405,7 +405,7 @@ def new_year():
                 data = json.load(user)
             user_thread = data[str(id)]["id_thread"]
             try:
-                graph = gpt.chat_gpt(thread = user_thread, text = str(bd.get_graph_history(country)), assist_id="asst_G0Jb4ayVPJKCc0iYdM5fmkxY")
+                graph = gpt.chat_gpt(thread = user_thread, text = str(bd.get_graph_history(country)), assist_id=config_bd["statistic_graph"])
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
@@ -415,7 +415,7 @@ def new_year():
                 print("Произошла ошибка. Подробности записаны в error.log")
             time.sleep(1)
             try:
-                text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
+                text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id=config_bd["user_event_handler"])
                 json_string = text.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 text = json.loads(json_string)
@@ -428,7 +428,7 @@ def new_year():
                 for proj in user_list[str(id)]["projects"]:
                     if int(proj) <= int(year):
                         try:
-                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id="asst_DEHzPlgdcP8PiXaDAq2AJUDd")
+                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id=config_bd["project_assistent"])
                             json_string = text.replace("json", "")
                             json_string = json_string.replace("```", "").strip()
                             text = json.loads(json_string)
