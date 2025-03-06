@@ -4,8 +4,8 @@ import base64
 import json
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
-user_path = os.path.join(current_dir, "..", "user.gitignore")
-config_path = os.path.join(current_dir, "..", "config.gitignore")
+user_path = os.path.join(current_dir, "..", "user.json")
+config_path = os.path.join(current_dir, "..", "config.json")
 
 with open(config_path, 'r+', encoding='utf-8') as cfile:
         config_bd = json.load(cfile)
