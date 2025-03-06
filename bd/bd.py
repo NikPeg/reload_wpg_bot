@@ -3,11 +3,11 @@ import os
 import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 msg_path = os.path.join(current_dir, "..", "messages.json")
-country_path = os.path.join(current_dir, "..", "country.json")
-user_path = os.path.join(current_dir, "..", "user.json")
-config_path = os.path.join(current_dir, "..", "config.json")
-year_path = os.path.join(current_dir, "..", "year.json")
-picture_path = os.path.join(current_dir, "..", "picture.json")
+country_path = os.path.join(current_dir, "..", "country.gitignore")
+user_path = os.path.join(current_dir, "..", "user.gitignore")
+config_path = os.path.join(current_dir, "..", "config.gitignore")
+year_path = os.path.join(current_dir, "..", "year.gitignore")
+picture_path = os.path.join(current_dir, "..", "picture.gitignore")
 
 def user_requests_upgrade(id: str):
     id = str(id)

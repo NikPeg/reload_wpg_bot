@@ -5,23 +5,8 @@ from telebot import types
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 msg_path = os.path.join(current_dir, "..", "messages.json")
-config_bd_path = os.path.join(current_dir, "..", "config.json")
-try:
-    with open(msg_path, "r", encoding='utf-8') as messages:
-        txt = json.load(messages)
-except FileNotFoundError:
-    print(f"Файл '{msg_path}' не найден.")
-except Exception as e:
-    print(f"Произошла ошибка: {e}")
-
-try:
-    with open(config_bd_path, "r", encoding='utf-8') as config:
-        config_bd = json.load(config)
-except FileNotFoundError:
-    print(f"Ошибка: Файл '{config_bd_path}' не найден.")
-except Exception as e:
-    print(f"Ошибка при работе с файлом '{config_bd_path}': {e}")
-bot = telebot.TeleBot(config_bd["tg_token"])
+with open(msg_path, "r", encoding='utf-8') as message:
+    txt = json.load(message)
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup()
@@ -80,4 +65,4 @@ def sub_check():
 
 
 if __name__ == "__main__":
-    bot.send_message(-4707616830, "Тест кнопок", reply_markup=main_win_reg_nl())
+    pass

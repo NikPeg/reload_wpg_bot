@@ -17,17 +17,23 @@ import traceback
 
 logging.basicConfig(filename="error.log", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
+msg_path = "messages.json"
+country_path = "country.gitignore"
+user_path = "user.gitignore"
+config_path = "config.gitignore"
+year_path = "year.gitignore"
+picture_path = "picture.gitignore"
 
 
 
-with open("config.json", "r", encoding='utf-8') as config:
+with open(config_path, "r", encoding='utf-8') as config:
     config_bd = json.load(config)
 bot = telebot.TeleBot(config_bd["tg_token"])
 openai.api_key = config_bd["chatGPT_token"]
 PUBLIC_ID = config_bd["PAYMENTS_ID"]
 API_SECRET =  config_bd["PAYMENTS_TOKEN"]
 DEBUG = bool(config_bd["debug"])
-with open("messages.json", "r", encoding='utf-8') as messages:
+with open(msg_path, "r", encoding='utf-8') as messages:
     txt = json.load(messages)
 
 def bot_trac(message):
@@ -49,7 +55,7 @@ def send_admin_mail(message):
     bot.register_next_step_handler(message, send_admin_mail1)
 def send_admin_mail1(message):
     if message.text in txt["btn"]["country"]:
-        with open("country.json", 'r+', encoding='utf-8') as user:
+        with open(country_path, 'r+', encoding='utf-8') as user:
             data = json.load(user)
         country = message.text
         message = bot.send_message(message.chat.id, text = txt["msg"]["mail_text"])
@@ -62,7 +68,7 @@ def send_admin_mail2(message, recipient):
     markup = btn.main_menu()
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
     try:
-        with open("user.json", "r", encoding='utf-8') as user:
+        with open(user_path, "r", encoding='utf-8') as user:
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
     except:
@@ -77,7 +83,7 @@ def unsub(message):
     bot.register_next_step_handler(message, unsub2)
 
 def unsub2(message):
-    with open("country.json", "r+", encoding='utf-8') as file:
+    with open(country_path, "r+", encoding='utf-8') as file:
         data = json.load(file)
     bd.del_user(data[message.text]["id"])
     markup = btn.main_menu()
@@ -89,7 +95,7 @@ def mailing(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mailing"])
     bot.register_next_step_handler(message, mailing1)
 def mailing1(message):
-    with open("country.json", "r+", encoding='utf-8') as file:
+    with open(country_path, "r+", encoding='utf-8') as file:
         data = json.load(file)
         for country in data:
             leader = data[country]["id"]
@@ -142,7 +148,7 @@ def country_choose2(message):
             thread = gpt.user_get_thread()
             bd.id_thread_upgrade(str(message.chat.id), thread)
             markup = btn.main_menu()
-            with open("user.json", "r", encoding='utf-8') as user:
+            with open(user_path, "r", encoding='utf-8') as user:
                 user = json.load(user)
             message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(name=str(message.from_user.first_name), country=message.text), reply_markup=markup)
             bot_trac(message)
@@ -152,7 +158,7 @@ def country_choose2(message):
             bot_trac(message)
             bot.register_next_step_handler(message, country_choose2)
         elif refund == "new user":
-            with open("user.json", 'r+', encoding='utf-8') as user:
+            with open(user_path, 'r+', encoding='utf-8') as user:
                 data = json.load(user)
             thread = gpt.user_get_thread()
             bd.id_thread_upgrade(str(message.chat.id), thread = thread)
@@ -268,7 +274,7 @@ def send_mail(message):
 def send_mail1(message):
     bot_trac(message)
     if message.text in txt["btn"]["country"]:
-        with open("country.json", 'r+', encoding='utf-8') as user:
+        with open(country_path, 'r+', encoding='utf-8') as user:
             data = json.load(user)
         country = message.text
         message = bot.send_message(message.chat.id, text = txt["msg"]["mail_text"])
@@ -286,7 +292,7 @@ def send_mail2(message, recipient):
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
     
     try:
-        with open("user.json", "r", encoding='utf-8') as user:
+        with open(user_path, "r", encoding='utf-8') as user:
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
         bot_trac(message)
@@ -296,7 +302,7 @@ def send_mail2(message, recipient):
 
 @bot.message_handler(func=lambda message: "проекты" in message.text.lower())
 def project(message):
-    with open("user.json", "r", encoding='utf-8') as user:
+    with open(user_path, "r", encoding='utf-8') as user:
         user = json.load(user)
     text = ""
     if len(user[str(message.chat.id)]["projects"]) == 0:
@@ -321,7 +327,7 @@ def send_graphics_without_perm(message):
 
 @bot.message_handler(func=lambda message: "графики" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics(message):
-    with open("user.json", "r", encoding='utf-8') as user:
+    with open(user_path, "r", encoding='utf-8') as user:
         user = json.load(user)
     data = bd.get_graph_history(user[str(message.chat.id)]["country"])
     for key in data:
@@ -373,7 +379,7 @@ def unknow_command(message):
 def to_gpt(message):
     bot_trac(message)
     for_edit = bot.send_message(message.chat.id, text=txt["msg"]["gpt_thinks"])
-    with open("user.json", 'r+', encoding='utf-8') as user:
+    with open(user_path, 'r+', encoding='utf-8') as user:
         data = json.load(user)
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
@@ -401,7 +407,7 @@ def to_gpt(message):
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
     json_string = json.loads(json_string)
-    with open("country.json", 'r+', encoding='utf-8') as country:
+    with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
         if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
@@ -422,15 +428,15 @@ def bot_polling():
 
 
 def new_year():
-    with open("country.json", 'r+', encoding='utf-8') as country:
+    with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
-    with open("user.json", 'r+', encoding='utf-8') as user:
+    with open(user_path, 'r+', encoding='utf-8') as user:
         user_list = json.load(user)
     year = bd.new_year()
     for country in country_list:
         id = int(country_list[country]["id"])
         if id != 0:
-            with open("user.json", 'r+', encoding='utf-8') as user:
+            with open(user_path, 'r+', encoding='utf-8') as user:
                 data = json.load(user)
             user_thread = data[str(id)]["id_thread"]
             try:

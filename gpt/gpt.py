@@ -4,8 +4,9 @@ import os
 import time 
 import random
 current_dir = os.path.dirname(os.path.abspath(__file__))
-user_path = os.path.join(current_dir, "..", "user.json")
-config_path = os.path.join(current_dir, "..", "config.json")
+user_path = os.path.join(current_dir, "..", "user.gitignore")
+config_path = os.path.join(current_dir, "..", "config.gitignore")
+country_path = os.path.join(current_dir, "..", "country.gitignore")
 with open(config_path, 'r+', encoding='utf-8') as cfile:
         config_bd = json.load(cfile)
 openai.api_key = config_bd["chatGPT_token"]
@@ -101,28 +102,13 @@ def chat_gpt(thread, text: str, assist_id="1"):
 
 
 def country_report(thread_id, assist_id, country, text):
-    data = {
-        "Инферия": 0,
-        "Мордор": 0,
-        "Рамондана": 0,
-        "Хуан-Фернандес": 0,
-        "ГСКСР": 0,
-        "Лурк": 0,
-        "ФТК": 0,
-        "Шайервуд": 0,
-        "Британия": 0
-        }
-    final_data = {
-        "Инферия": 0,
-        "Мордор": 0,
-        "Рамондана": 0,
-        "Хуан-Фернандес": 0,
-        "ГСКСР": 0,
-        "Лурк": 0,
-        "ФТК": 0,
-        "Шайервуд": 0,
-        "Британия": 0
-        }
+    data = {}
+    with open(country_path, 'r+', encoding='utf-8') as cfile:
+        country_bd = json.load(cfile)
+        for country_1 in country_bd:
+            data[country_1] = 0
+    final_data = dict(data)
+    
     final_data[country] = text
     del data[country]
     random_one = random.choice(list(data.keys()))
@@ -132,7 +118,6 @@ def country_report(thread_id, assist_id, country, text):
         if random.random() <= 0.2:
             final_data[key] = 2
             del data[key]
-    
     final_data = str({key: value for key, value in final_data.items() if value != 0})
     print(final_data)
     openai.beta.threads.messages.create(
@@ -161,12 +146,11 @@ def country_report(thread_id, assist_id, country, text):
 if __name__ == "__main__":
     #text = new_assist()
     # text = chat_gpt(thread = "thread_P67niks6tc70bVcHYFX7PWPk", text = f""" "GDP": [750, 800, 860], "population": [9,10,9],"rating_government": [95,90,93]" """, assist_id="asst_kDUKu8X0XuiHG06XyJsXA4nO")
-    text = chat_gpt(thread = "thread_Y9vnu2DOBeDjCdgZS1RIfT6m", text = f"требую построить шаурмечную", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
-    print(text)
+    #text = chat_gpt(thread = "thread_Y9vnu2DOBeDjCdgZS1RIfT6m", text = f"требую построить шаурмечную", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
+    #print(text)
     #text = country_report("thread_5aSqLgWWRAok4gqmqW0JXItY", "asst_qTNw4fBtCWneSa0fokdyG57J", "Лурк", "приказываю запретить фтк вести торговую деятельность")
     #print(text)
     #text = chat_gpt(thread = "thread_5aSqLgWWRAok4gqmqW0JXItY", text = f"Сегодня в Лурке был выполнен приказ звучащий как: построить завод свинца. Подведи итоги этого события", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
     #print(text) 
-    
-    
+    #country_report(1, 1, "Лурк", "meow")
     pass   
