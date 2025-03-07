@@ -37,9 +37,8 @@ with open(msg_path, "r", encoding='utf-8') as messages:
     txt = json.load(messages)
 
 def bot_trac(message):
-        if DEBUG:
-            bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
-
+    if DEBUG:
+        bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
 
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["new_year", "/new_year"])
@@ -48,11 +47,14 @@ def admin_new_year(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_new_year"].format(year = year), reply_markup=markup)
 
+
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["answer", "/answer"])
 def send_admin_mail(message):
     markup = btn.country_list() 
     message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
     bot.register_next_step_handler(message, send_admin_mail1)
+
+
 def send_admin_mail1(message):
     if message.text in txt["btn"]["country"]:
         with open(country_path, 'r+', encoding='utf-8') as user:
@@ -64,6 +66,8 @@ def send_admin_mail1(message):
         markup = btn.country_list() 
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
         bot.register_next_step_handler(message, send_admin_mail1)
+
+
 def send_admin_mail2(message, recipient): 
     markup = btn.main_menu()
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
@@ -81,6 +85,7 @@ def unsub(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
     bot.register_next_step_handler(message, unsub2)
 
+
 def unsub2(message):
     with open(country_path, "r+", encoding='utf-8') as file:
         data = json.load(file)
@@ -89,10 +94,13 @@ def unsub2(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
+
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["mailing", "/mailing"])
 def mailing(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mailing"])
     bot.register_next_step_handler(message, mailing1)
+
+
 def mailing1(message):
     with open(country_path, "r+", encoding='utf-8') as file:
         data = json.load(file)
@@ -104,6 +112,7 @@ def mailing1(message):
                 message = bot.send_message(leader, text = message.text)
                 bot.send_message(chat_id = -4707616830, text = f"Отправлено в {country}")
 
+
 @bot.message_handler(content_types=['photo'], func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.caption is not None and message.caption.lower() in ["map", "/map"])
 def map_change(message):
     bot_trac(message)
@@ -111,12 +120,9 @@ def map_change(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
 
 
-
 @bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
-
-
 
 
 @bot.message_handler(func=lambda message: bd.is_logged(str(message.chat.id)))
@@ -127,6 +133,7 @@ def new_user(message):
     message = bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
+
 @bot.message_handler(func=lambda message: "страна" in message.text.lower())
 def country_choose(message):
     bot_trac(message)
@@ -134,6 +141,8 @@ def country_choose(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose"], reply_markup=markup)
     bot_trac(message)
     bot.register_next_step_handler(message, country_choose2)
+
+
 def country_choose2(message):
     bot_trac(message)
     if str(message.text) in txt["btn"]["country"]:
@@ -172,12 +181,15 @@ def country_choose2(message):
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup=markup)
         bot.register_next_step_handler(message, country_choose2)
 
+
 @bot.message_handler(func=lambda message: "погружение" in message.text.lower())
 def sub1(message):
     bot_trac(message)
     markup = btn.sub()
     bot.send_photo(message.chat.id, bd.get_photo("sub"), reply_markup=markup)
     bot.register_next_step_handler(message, sub2)
+
+
 def sub2(message, new_user = False):
     if message.text in txt["btn"]["sub"]:
         if message.text.lower() == "i уровень":
@@ -254,7 +266,6 @@ def sub3(message, new_user):
                 message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
 
 
-
 @bot.message_handler(func=lambda message: "телеграмма" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 2))
 def send_graphics_without_perm(message):
     markup = btn.main_menu()
@@ -270,6 +281,7 @@ def send_mail(message):
     bot_trac(message)
     bot.register_next_step_handler(message, send_mail1)
 
+
 def send_mail1(message):
     bot_trac(message)
     if message.text in txt["btn"]["country"]:
@@ -284,6 +296,7 @@ def send_mail1(message):
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
         bot_trac(message)
         bot.register_next_step_handler(message, send_mail1)
+
 
 def send_mail2(message, recipient): 
     bot_trac(message)
@@ -318,11 +331,13 @@ def project(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["proj_list"].format(text = text), reply_markup=markup)
     bot_trac(message)
 
+
 @bot.message_handler(func=lambda message: "графики" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics_without_perm(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_3"], reply_markup=markup)
     bot_trac(message)
+
 
 @bot.message_handler(func=lambda message: "графики" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics(message):
@@ -360,7 +375,6 @@ def send_graphics(message):
         plt.clf()    
         
 
-
 @bot.message_handler(func=lambda message: "карта" in message.text.lower())
 def send_map(message):
     bot_trac(message)
@@ -373,6 +387,7 @@ def send_map(message):
 def unknow_command(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["unknown_text"], reply_markup=markup)
+
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
 def to_gpt(message):
@@ -424,6 +439,7 @@ def to_gpt(message):
                 id = int(country_data["id"])
                 message = bot.send_message(id, text = json_string[country])
                 bot_trac(message)        
+
 
 @bot.message_handler(func=lambda message: True)
 def to_gpt(message):
