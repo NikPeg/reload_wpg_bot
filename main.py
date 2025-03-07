@@ -71,9 +71,8 @@ def send_admin_mail2(message, recipient):
         with open(user_path, "r", encoding='utf-8') as user1:
             user = json.load(user1)
         message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[recipient]["country"]), text = message.text)) 
-    except:
-        pass
-
+    except Exception as e:
+        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке send_admin_mail2: {e}")
 
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["unsub", "/unsub"])
@@ -296,8 +295,8 @@ def send_mail2(message, recipient):
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
         bot_trac(message)
-    except:
-        pass
+    except Exception as e:
+        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке: {e}")
 
 
 @bot.message_handler(func=lambda message: "проекты" in message.text.lower())
@@ -457,6 +456,7 @@ def new_year():
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
+                bot.send_message(chat_id=-4707616830, text=f"Ошибка в новом году: {e}")
                 return
 
             time.sleep(1)
@@ -470,6 +470,8 @@ def new_year():
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
+                bot.send_message(chat_id=-4707616830, text=f"Ошибка в мгновенном событии: {e}")
+
             if len(user_list[str(id)]["projects"]) > 0:
                 for proj in user_list[str(id)]["projects"]:
                     if int(proj) <= int(year):
@@ -484,6 +486,7 @@ def new_year():
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                             print("Произошла ошибка. Подробности записаны в error.log")
+                            bot.send_message(chat_id=-4707616830, text=f"Ошибка при обработке проекта: {e}")
     return year
 
 
