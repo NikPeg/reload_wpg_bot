@@ -390,17 +390,21 @@ def to_gpt(message):
         json_string = json.loads(json_string)
         bd.user_new_requests(str(message.chat.id))
     except Exception as e:
-                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
-                print("Произошла ошибка. Подробности записаны в error.log")
-                return
+        logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+        print("Произошла ошибка. Подробности записаны в error.log")
+        bot.send_message(-4707616830, f"Произошла ошибка: {type(e).__name__}")
+        return
+
     if json_string["Результат приказа"] == "strange":
         message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
         bot_trac(message)
         return
-    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = json_string["Результат приказа"])
+    
+    res, *_ = json_string.values()
+    bot.edit_message_text(chat_id=for_edit.chat.id, message_id=for_edit.message_id, text=res)
     bot_trac(for_edit)
     
-    if json_string["Срок реализации"] != 0:
+    if json_string.get("Срок реализации", 0) != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
     bot.send_message(-4707616830, text = text)
