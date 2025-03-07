@@ -135,6 +135,8 @@ def country_report(thread_id, assist_id, country, text, bot=None):
         bot.send_message(-4707616830, "while True...")
     while True:
         run_status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id).status
+        if bot:
+            bot.send_message(-4707616830, f"run status: {run_status}")
         if run_status == "completed":
             break
         elif run_status == "failed":
