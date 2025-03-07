@@ -454,7 +454,7 @@ def new_year():
                 json_string = text.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 text = json.loads(json_string)
-                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {text["Результат приказа"]}")
+                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {list(text.values())[0]}")
                 bot_trac(message)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
