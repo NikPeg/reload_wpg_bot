@@ -101,7 +101,7 @@ def chat_gpt(thread, text: str, assist_id="1"):
 
 
 
-def country_report(thread_id, assist_id, country, text):
+def country_report(thread_id, assist_id, country, text, bot=None):
     data = {}
     with open(country_path, 'r+', encoding='utf-8') as cfile:
         country_bd = json.load(cfile)
@@ -120,6 +120,8 @@ def country_report(thread_id, assist_id, country, text):
             del data[key]
     final_data = str({key: value for key, value in final_data.items() if value != 0})
     print(final_data)
+    if bot:
+        bot.send_message(-4707616830, str(final_data))
     openai.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
@@ -129,6 +131,8 @@ def country_report(thread_id, assist_id, country, text):
         thread_id=thread_id,
         assistant_id=assist_id
     )
+    if bot:
+        bot.send_message(-4707616830, "while True...")
     while True:
         run_status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id).status
         if run_status == "completed":
@@ -137,7 +141,11 @@ def country_report(thread_id, assist_id, country, text):
             return  "failed"
         time.sleep(1)
     messages = openai.beta.threads.messages.list(thread_id=thread_id, order="asc")
+    if bot:
+        bot.send_message(-4707616830, str(messages))
     last_assistant_message = next((msg for msg in reversed(messages.data) if msg.role == "assistant"), None)
+    if bot:
+        bot.send_message(-4707616830, "last message: " + str(last_assistant_message))
     if last_assistant_message:
         for content_item in last_assistant_message.content:
             if content_item.type == "text":
