@@ -414,6 +414,7 @@ def to_gpt(message):
         json_string = json.loads(json_string)
     except Exception as e:
         bot.send_message(-4707616830, f"Ошибка при загрузке в json: {e}")
+        return
 
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
@@ -456,6 +457,8 @@ def new_year():
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
+                return
+
             time.sleep(1)
             try:
                 text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id=config_bd["user_event_handler"])
