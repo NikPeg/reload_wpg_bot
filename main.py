@@ -406,7 +406,11 @@ def to_gpt(message):
     bot.send_message(-4707616830, text = text)
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
-    json_string = json.loads(json_string)
+    try:
+        json_string = json.loads(json_string)
+    except Exception as e:
+        bot.send_message(-4707616830, f"Ошибка при загрузке в json: {e}")
+
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
