@@ -296,7 +296,7 @@ def send_mail2(message, recipient):
         message = bot.send_message(recipient, text = txt["msg"]["mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
         bot_trac(message)
     except Exception as e:
-        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке: {e}")
+        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке send_mail2: {e}")
 
 
 @bot.message_handler(func=lambda message: "проекты" in message.text.lower())
