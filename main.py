@@ -37,8 +37,9 @@ with open(msg_path, "r", encoding='utf-8') as messages:
     txt = json.load(messages)
 
 def bot_trac(message):
-    if DEBUG:
-        bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
+        if DEBUG:
+            bot.forward_message(chat_id = -4707616830, from_chat_id = message.chat.id, message_id = message.message_id)      
+
 
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["new_year", "/new_year"])
@@ -47,14 +48,11 @@ def admin_new_year(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_new_year"].format(year = year), reply_markup=markup)
 
-
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["answer", "/answer"])
 def send_admin_mail(message):
     markup = btn.country_list() 
     message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
     bot.register_next_step_handler(message, send_admin_mail1)
-
-
 def send_admin_mail1(message):
     if message.text in txt["btn"]["country"]:
         with open(country_path, 'r+', encoding='utf-8') as user:
@@ -66,8 +64,6 @@ def send_admin_mail1(message):
         markup = btn.country_list() 
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup = markup)
         bot.register_next_step_handler(message, send_admin_mail1)
-
-
 def send_admin_mail2(message, recipient): 
     markup = btn.main_menu()
     bot.send_message(message.chat.id, text = txt["msg"]["mail_done"], reply_markup=markup)
@@ -75,8 +71,9 @@ def send_admin_mail2(message, recipient):
         with open(user_path, "r", encoding='utf-8') as user1:
             user = json.load(user1)
         message = bot.send_message(recipient, text = txt["msg"]["admin_mail_to"].format(by_user=str(user[recipient]["country"]), text = message.text)) 
-    except Exception as e:
-        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке send_admin_mail2: {e}")
+    except:
+        pass
+
 
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["unsub", "/unsub"])
@@ -84,7 +81,6 @@ def unsub(message):
     markup = btn.country_list()
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_unsub"], reply_markup=markup)
     bot.register_next_step_handler(message, unsub2)
-
 
 def unsub2(message):
     with open(country_path, "r+", encoding='utf-8') as file:
@@ -94,13 +90,10 @@ def unsub2(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
-
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["mailing", "/mailing"])
 def mailing(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_mailing"])
     bot.register_next_step_handler(message, mailing1)
-
-
 def mailing1(message):
     with open(country_path, "r+", encoding='utf-8') as file:
         data = json.load(file)
@@ -112,7 +105,6 @@ def mailing1(message):
                 message = bot.send_message(leader, text = message.text)
                 bot.send_message(chat_id = -4707616830, text = f"Отправлено в {country}")
 
-
 @bot.message_handler(content_types=['photo'], func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.caption is not None and message.caption.lower() in ["map", "/map"])
 def map_change(message):
     bot_trac(message)
@@ -120,9 +112,12 @@ def map_change(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
 
 
+
 @bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
+
+
 
 
 @bot.message_handler(func=lambda message: bd.is_logged(str(message.chat.id)))
@@ -133,16 +128,13 @@ def new_user(message):
     message = bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
 
-
-@bot.message_handler(func=lambda message: "страна" == message.text.lower())
+@bot.message_handler(func=lambda message: "страна" in message.text.lower())
 def country_choose(message):
     bot_trac(message)
     markup = btn.country_list()
     message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose"], reply_markup=markup)
     bot_trac(message)
     bot.register_next_step_handler(message, country_choose2)
-
-
 def country_choose2(message):
     bot_trac(message)
     if str(message.text) in txt["btn"]["country"]:
@@ -181,15 +173,12 @@ def country_choose2(message):
         message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2_er"], reply_markup=markup)
         bot.register_next_step_handler(message, country_choose2)
 
-
-@bot.message_handler(func=lambda message: "погружение" == message.text.lower())
+@bot.message_handler(func=lambda message: "погружение" in message.text.lower())
 def sub1(message):
     bot_trac(message)
     markup = btn.sub()
     bot.send_photo(message.chat.id, bd.get_photo("sub"), reply_markup=markup)
     bot.register_next_step_handler(message, sub2)
-
-
 def sub2(message, new_user = False):
     if message.text in txt["btn"]["sub"]:
         if message.text.lower() == "i уровень":
@@ -266,21 +255,21 @@ def sub3(message, new_user):
                 message = bot.send_message(message.chat.id, text = txt["msg"]["reg_success"], reply_markup = markup)
 
 
-@bot.message_handler(func=lambda message: "телеграмма" == message.text.lower() and not bd.perm_for_command(str(message.chat.id), 2))
+
+@bot.message_handler(func=lambda message: "телеграмма" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 2))
 def send_graphics_without_perm(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_2"], reply_markup=markup)
     bot_trac(message)
 
 
-@bot.message_handler(func=lambda message: "телеграмма" == message.text.lower() and bd.perm_for_command(str(message.chat.id), 2))
+@bot.message_handler(func=lambda message: "телеграмма" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 2))
 def send_mail(message):
     bot_trac(message)
     markup = btn.country_list() 
     message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
     bot_trac(message)
     bot.register_next_step_handler(message, send_mail1)
-
 
 def send_mail1(message):
     bot_trac(message)
@@ -297,7 +286,6 @@ def send_mail1(message):
         bot_trac(message)
         bot.register_next_step_handler(message, send_mail1)
 
-
 def send_mail2(message, recipient): 
     bot_trac(message)
     markup = btn.main_menu()
@@ -308,11 +296,11 @@ def send_mail2(message, recipient):
             user = json.load(user)
         message = bot.send_message(recipient, text = txt["msg"]["mail_to"].format(by_user=str(user[str(message.chat.id)]["country"]), text = message.text)) 
         bot_trac(message)
-    except Exception as e:
-        bot.send_message(chat_id=-4707616830, text=f"Ошибка при отправке send_mail2: {e}")
+    except:
+        pass
 
 
-@bot.message_handler(func=lambda message: "проекты" == message.text.lower())
+@bot.message_handler(func=lambda message: "проекты" in message.text.lower())
 def project(message):
     with open(user_path, "r", encoding='utf-8') as user:
         user = json.load(user)
@@ -331,22 +319,20 @@ def project(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["proj_list"].format(text = text), reply_markup=markup)
     bot_trac(message)
 
-
-@bot.message_handler(func=lambda message: "графики" == message.text.lower() and not bd.perm_for_command(str(message.chat.id), 3))
+@bot.message_handler(func=lambda message: "графики" in message.text.lower() and not bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics_without_perm(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_3"], reply_markup=markup)
     bot_trac(message)
 
-
-@bot.message_handler(func=lambda message: "графики" == message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
+@bot.message_handler(func=lambda message: "графики" in message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics(message):
     with open(user_path, "r", encoding='utf-8') as user:
         user = json.load(user)
     data = bd.get_graph_history(user[str(message.chat.id)]["country"])
     for key in data:
         y_values = data[key]
-        x_values = np.arange(2650, 2650 + len(y_values))
+        x_values = np.arange(2567, 2567 + len(y_values))
         plt.figure(figsize=(8, 6))
         plt.plot(x_values, y_values, marker='o')  
         plt.xlabel("Год")
@@ -375,7 +361,8 @@ def send_graphics(message):
         plt.clf()    
         
 
-@bot.message_handler(func=lambda message: "карта" == message.text.lower())
+
+@bot.message_handler(func=lambda message: "карта" in message.text.lower())
 def send_map(message):
     bot_trac(message)
     markup = btn.main_menu()
@@ -387,7 +374,6 @@ def send_map(message):
 def unknow_command(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["unknown_text"], reply_markup=markup)
-
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
 def to_gpt(message):
@@ -404,32 +390,23 @@ def to_gpt(message):
         json_string = json.loads(json_string)
         bd.user_new_requests(str(message.chat.id))
     except Exception as e:
-        logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
-        print("Произошла ошибка. Подробности записаны в error.log")
-        bot.send_message(-4707616830, f"Произошла ошибка: {type(e).__name__}")
-        return
-
+                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+                print("Произошла ошибка. Подробности записаны в error.log")
+                return
     if json_string["Результат приказа"] == "strange":
         message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
         bot_trac(message)
         return
-    
-    res, *_ = json_string.values()
-    bot.edit_message_text(chat_id=for_edit.chat.id, message_id=for_edit.message_id, text=res)
+    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = json_string["Результат приказа"])
     bot_trac(for_edit)
     
-    if json_string.get("Срок реализации", 0) != 0:
+    if json_string["Срок реализации"] != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
-    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}", bot=bot)
+    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
     bot.send_message(-4707616830, text = text)
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
-    try:
-        json_string = json.loads(json_string)
-    except Exception as e:
-        bot.send_message(-4707616830, f"Ошибка при загрузке в json: {e}")
-        return
-
+    json_string = json.loads(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
@@ -439,7 +416,6 @@ def to_gpt(message):
                 id = int(country_data["id"])
                 message = bot.send_message(id, text = json_string[country])
                 bot_trac(message)        
-
 
 @bot.message_handler(func=lambda message: True)
 def to_gpt(message):
@@ -472,22 +448,17 @@ def new_year():
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
-                bot.send_message(chat_id=-4707616830, text=f"Ошибка в новом году: {e}")
-                return
-
             time.sleep(1)
             try:
                 text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id=config_bd["user_event_handler"])
                 json_string = text.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 text = json.loads(json_string)
-                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {list(text.values())[0]}")
+                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {text["Результат приказа"]}")
                 bot_trac(message)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
-                bot.send_message(chat_id=-4707616830, text=f"Ошибка в мгновенном событии: {e}")
-
             if len(user_list[str(id)]["projects"]) > 0:
                 for proj in user_list[str(id)]["projects"]:
                     if int(proj) <= int(year):
@@ -502,7 +473,6 @@ def new_year():
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                             print("Произошла ошибка. Подробности записаны в error.log")
-                            bot.send_message(chat_id=-4707616830, text=f"Ошибка при обработке проекта: {e}")
     return year
 
 
