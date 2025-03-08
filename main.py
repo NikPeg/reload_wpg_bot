@@ -88,7 +88,6 @@ def unsub2(message):
     bd.del_user(data[message.text]["id"])
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup=markup)
-    bot.register_next_step_handler(message, country_choose)
 
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["mailing", "/mailing"])
 def mailing(message):
@@ -113,10 +112,9 @@ def map_change(message):
 
 
 
-@bot.message_handler(func=lambda message: str(message.chat.id) == str(-4707616830))
+@bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
-
 
 
 
