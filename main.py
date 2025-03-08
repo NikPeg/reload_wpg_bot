@@ -150,7 +150,7 @@ def country_choose2(message):
             markup = btn.main_menu()
             with open(user_path, "r", encoding='utf-8') as user:
                 user = json.load(user)
-            message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(name=str(message.from_user.first_name), country=message.text), reply_markup=markup)
+            message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose2"].format(name=str(message.from_user.first_name)+message.chat.id, country=message.text), reply_markup=markup)
             bot_trac(message)
         elif refund == "busy somebody":
             markup = btn.country_list()
