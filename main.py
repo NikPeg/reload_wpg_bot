@@ -340,10 +340,10 @@ def send_graphics(message):
         plt.plot(x_values, y_values, marker='o')  
         plt.xlabel("Год")
         if key == "GDP":
-            y_text = "Миллионы пряности"
+            y_text = "Млрд паромонет"
             name = "ВВП"
         if key == "population":
-            y_text = "Миллион человек"
+            y_text = "Млн человек"
             name = "Население"
         if key == "rating_government":
             y_text = "% от общего населения"
