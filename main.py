@@ -381,7 +381,7 @@ def unknow_command(message):
 
 def get_user_info(user_country):
     success = random.randrange(1, 101)
-    data = bd.get_graph_history(user[str(message.chat.id)]["country"])
+    data = bd.get_graph_history(user_country)
     gdp = data["GDP"]
     population = data["population"]
     support = data["rating_government"]
