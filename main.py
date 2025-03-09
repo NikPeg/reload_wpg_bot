@@ -128,7 +128,6 @@ def new_user(message):
 
 @bot.message_handler(func=lambda message: "страна" == message.text.lower())
 def country_choose(message):
-    print("country_choose")
     bot_trac(message)
     markup = btn.country_list()
     message = bot.send_message(message.chat.id, text = txt["msg"]["country_choose"], reply_markup=markup)
@@ -137,7 +136,6 @@ def country_choose(message):
 
 
 def country_choose2(message):
-    print("country_choose2")
     bot_trac(message)
     if str(message.text) in txt["btn"]["country"]:
         refund = bd.country_upgrade(str(message.chat.id), message.text)
