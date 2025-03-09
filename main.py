@@ -346,7 +346,7 @@ def send_graphics(message):
             y_text = "Млн человек"
             name = "Население"
         if key == "rating_government":
-            y_text = "% от общего населения"
+            y_text = "% населения"
             name = "Процент поддержки правительства"
         plt.ylabel(y_text)
         plt.title(name)
