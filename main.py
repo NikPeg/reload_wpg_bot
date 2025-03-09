@@ -14,6 +14,7 @@ import io
 import numpy as np
 import logging
 import traceback 
+import random
 
 logging.basicConfig(filename="error.log", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -179,6 +180,8 @@ def sub1(message):
     markup = btn.sub()
     bot.send_photo(message.chat.id, bd.get_photo("sub"), reply_markup=markup)
     bot.register_next_step_handler(message, sub2)
+
+
 def sub2(message, new_user = False):
     if message.text in txt["btn"]["sub"]:
         if message.text.lower() == "i уровень":
@@ -384,7 +387,8 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}", assist_id=config_bd["user_event_handler"])
+        rand = random.randrange(1, 101)
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n Успех: {rand}/100", assist_id=config_bd["user_event_handler"])
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
