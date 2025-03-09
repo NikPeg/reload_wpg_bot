@@ -381,17 +381,16 @@ def unknow_command(message):
 
 def get_user_info(user_country):
     success = random.randrange(1, 101)
-    gdp, population, support_percent
     data = bd.get_graph_history(user[str(message.chat.id)]["country"])
     gdp = data["GDP"]
     population = data["population"]
-    support = data["rating_government"
+    support = data["rating_government"]
 
     res = (
         f"Успех: {success}/100\n"
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
-        f"Поддержка населения: {support_percent}%"
+        f"Поддержка населения: {support}%"
     )
     bot.send_message(-4707616830, text=res)
     return res
