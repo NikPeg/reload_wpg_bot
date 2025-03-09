@@ -378,6 +378,25 @@ def unknow_command(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["unknown_text"], reply_markup=markup)
 
+
+def get_user_info(user_country):
+    success = random.randrange(1, 101)
+    gdp, population, support_percent
+    data = bd.get_graph_history(user[str(message.chat.id)]["country"])
+    gdp = data["GDP"]
+    population = data["population"]
+    support = data["rating_government"
+
+    res = (
+        f"Успех: {success}/100\n"
+        f"ВВП: {gdp} млрд паромонет\n"
+        f"Население: {population} млн человек\n"
+        f"Поддержка населения: {support_percent}%"
+    )
+    bot.send_message(-4707616830, text=res)
+    return res
+
+
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
 def to_gpt(message):
     bot_trac(message)
@@ -387,8 +406,8 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        rand = random.randrange(1, 101)
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n Успех: {rand}/100", assist_id=config_bd["user_event_handler"])
+        info = get_user_info(user_country)
+        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
         json_string = json.loads(json_string)
