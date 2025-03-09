@@ -186,10 +186,10 @@ def get_graph_history(country):
         return mdata
 
 
-def mod_graph(country, dict):
+def mod_graph(country, d):
     with open(country_path, 'r+', encoding='utf-8') as cfile:
         data = json.load(cfile)
-        for key, value in dict.items():
+        for key, value in d.items():
             if type(value) == 'list':
                 data[country][key].append(int(value[0]))
                 continue
