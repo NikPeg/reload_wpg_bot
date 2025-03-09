@@ -142,12 +142,11 @@ def country_report(thread_id, assist_id, country, text, bot=None):
         elif run_status == "failed":
             return  "failed"
         time.sleep(1)
-    messages = openai.beta.threads.messages.list(thread_id=thread_id, order="asc")
-    if bot:
-        bot.send_message(-4707616830, str(messages))
-    last_assistant_message = next((msg for msg in reversed(messages.data) if msg.role == "assistant"), None)
-    if bot:
-        bot.send_message(-4707616830, "last message: " + str(last_assistant_message))
+    messages = openai.beta.threads.messages.list(thread_id=thread_id)
+    last_message = client.beta.threads.messages.retrieve(
+        message_id=messages.last_id,
+        thread_id=thread_id,
+    )
     if last_assistant_message:
         for content_item in last_assistant_message.content:
             if content_item.type == "text":
