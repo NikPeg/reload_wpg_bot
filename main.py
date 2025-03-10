@@ -387,11 +387,12 @@ def get_user_info(user_country, is_action=True):
     support = data["rating_government"][-1]
 
     res = (
-        f"Успех: {success}%\n" if is_action else ""
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
-        f"Поддержка населения: {support}%"
+        f"Поддержка населения: {support}%\n"
     )
+    if is_action:
+        res += f"Успех: {success}%\n"
     bot.send_message(-4707616830, text=res)
     return res
 
