@@ -121,7 +121,6 @@ def country_report(thread_id, assist_id, country, text, bot=None):
         elif key[:-1] in text:
             final_data[key] = 2
             data.pop(key, None)
-    final_data.pop(country)
     final_data = str({key: value for key, value in final_data.items() if value != 0})
     print(final_data)
     openai.beta.threads.messages.create(

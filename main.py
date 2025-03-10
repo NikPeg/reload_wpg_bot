@@ -432,6 +432,8 @@ def to_gpt(message):
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
+        if country == user_country:
+            continue
         if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
             country_data = country_list[country]
             if country_data["id"] != 0:
