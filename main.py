@@ -425,9 +425,9 @@ def to_gpt(message):
     if json_string["Срок реализации"] != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
-    bot.send_message(-4707616830, text = text)
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
+    bot.send_message(-4707616830, json_string)
     json_string = json.loads(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
