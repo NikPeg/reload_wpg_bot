@@ -398,8 +398,9 @@ def get_user_info(user_country, is_action=True):
 
 def check_action(text, thread):
     answer = gpt.chat_gpt(thread = thread, text = "message.text", assist_id=config_bd["action"])
-    print(answer)
-    return "не" not in answer.lower()
+    bot.send_message(-4707616830, json_string)
+    res = "не" not in answer.lower()
+    return res
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
