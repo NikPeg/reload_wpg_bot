@@ -397,9 +397,9 @@ def get_user_info(user_country, is_action=True):
 
 
 def check_action(text, thread):
-    answer = text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["action"])
+    answer = gpt.chat_gpt(thread = thread, text = "message.text", assist_id=config_bd["action"])
     print(answer)
-    return "да" in answer.lower()
+    return "не" not in answer.lower()
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
