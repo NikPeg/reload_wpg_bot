@@ -379,7 +379,7 @@ def unknow_command(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["unknown_text"], reply_markup=markup)
 
 
-def get_user_info(user_country):
+def get_user_info(user_country, is_action=True):
     success = random.randrange(1, 101)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
@@ -387,13 +387,19 @@ def get_user_info(user_country):
     support = data["rating_government"][-1]
 
     res = (
-        f"Успех: {success}%\n"
+        f"Успех: {success}%\n" if is_action else ""
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
         f"Поддержка населения: {support}%"
     )
     bot.send_message(-4707616830, text=res)
     return res
+
+
+def check_action(text, thread):
+    answer = text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["action"])
+    print(answer)
+    return "да" in answer.lower()
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
@@ -405,7 +411,8 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     try:
-        info = get_user_info(user_country)
+        is_action = check_action(message.text, user_thread)
+        info = get_user_info(user_country, is_action)
         text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
