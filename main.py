@@ -437,7 +437,7 @@ def to_gpt(message):
             if country_data["id"] != 0:
                 id = int(country_data["id"])
                 message = bot.send_message(id, text = json_string[country])
-                bot_trac(message)        
+
 
 @bot.message_handler(func=lambda message: True)
 def to_gpt(message):
