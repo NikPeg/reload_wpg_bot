@@ -57,7 +57,7 @@ def sub_pay_order(amount, id, description="Оплата подписки", order
         'Amount': amount,
         'Currency': "RUB",
         'Description': description,
-        'SubscriptionBehavior':'CreateMonthly',
+        'SubscriptionBehavior':'CreateWeekly',
         'InvoiceId': order_id,
         'AccountId': account_id
     }
