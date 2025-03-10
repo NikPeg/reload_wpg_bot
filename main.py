@@ -387,7 +387,7 @@ def get_user_info(user_country):
     support = data["rating_government"][-1]
 
     res = (
-        f"Успех: {success}/100\n"
+        f"Успех: {success}%\n"
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
         f"Поддержка населения: {support}%"
