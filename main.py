@@ -488,8 +488,8 @@ def new_year():
                 text = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.", assist_id=config_bd["user_event_handler"])
                 json_string = text.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
-                text = json.loads(json_string)
-                answer = json_string.get("Результат приказа") or json_string.get("Результат поручения") or json_string
+                d = json.loads(json_string)
+                answer = d.get("Результат приказа") or d.get("Результат поручения") or json_string
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
             except Exception as e:
