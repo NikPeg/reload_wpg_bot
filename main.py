@@ -385,11 +385,13 @@ def get_user_info(user_country, is_action=True):
     gdp = data["GDP"][-1]
     population = data["population"][-1]
     support = data["rating_government"][-1]
+    era = config_bd["era"]
 
     res = (
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
         f"Поддержка населения: {support}%\n"
+        f"Эпоха: {era}\n"
     )
     if is_action:
         res += f"Успех: {success}%\n"
@@ -424,11 +426,12 @@ def to_gpt(message):
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
                 return
-    if json_string["Результат приказа"] == "strange":
+    if not json_string or not json_string.values() or list(json_string.values())[0] == "strange":
         message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
         bot_trac(message)
         return
-    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = json_string["Результат приказа"])
+    answer = list(json_string.values())[0] if json_string.values() else json_string
+    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = answer)
     bot_trac(for_edit)
     
     if json_string["Срок реализации"] != 0:
