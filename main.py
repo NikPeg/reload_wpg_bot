@@ -484,11 +484,13 @@ def new_year():
                 print("Произошла ошибка. Подробности записаны в error.log")
             time.sleep(1)
             try:
-                text = gpt.chat_gpt(thread = user_thread, text = f"Сгененируй мгновенное событие для лидера {country}, используй разные темы", assist_id=config_bd["user_event_handler"])
+                era = config_bd["era"]
+                text = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.", assist_id=config_bd["user_event_handler"])
                 json_string = text.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 text = json.loads(json_string)
-                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {text["Результат приказа"]}")
+                answer = json_string.get("Результат приказа") or json_string.get("Результат поручения") or json_string
+                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
