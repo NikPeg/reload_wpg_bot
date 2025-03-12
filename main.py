@@ -414,23 +414,21 @@ def to_gpt(message):
         data = json.load(user)
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
+    answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
     try:
         is_action = check_action(message.text, user_thread)
         info = get_user_info(user_country, is_action)
         text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
+        answer = text
         json_string = text.replace("json", "")
         json_string = json_string.replace("```", "").strip()
+        answer = json_string
         json_string = json.loads(json_string)
         bd.user_new_requests(str(message.chat.id))
+        answer = json_string.get("Результат приказа") or json_string.get("Результат поручения") or json_string
     except Exception as e:
-                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
-                print("Произошла ошибка. Подробности записаны в error.log")
-                return
-    if not json_string or not json_string.values() or list(json_string.values())[0] == "strange":
-        message = bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = txt["msg"]["bad_req"])
-        bot_trac(message)
-        return
-    answer = list(json_string.values())[0] if json_string.values() else json_string
+        logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
+        print("Произошла ошибка. Подробности записаны в error.log")
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = answer)
     bot_trac(for_edit)
     
