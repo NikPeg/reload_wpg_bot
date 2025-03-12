@@ -415,6 +415,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
+    json_string = {}
     try:
         is_action = check_action(message.text, user_thread)
         info = get_user_info(user_country, is_action)
@@ -432,7 +433,7 @@ def to_gpt(message):
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = answer)
     bot_trac(for_edit)
     
-    if json_string["Срок реализации"] != 0:
+    if json_string.get("Срок реализации", 0) != 0:
         bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
     json_string = text.replace("json", "")
