@@ -46,7 +46,8 @@ def country_list():
     btn7 = types.KeyboardButton(text=txt["btn"]["country"][6])
     btn8 = types.KeyboardButton(text=txt["btn"]["country"][7])
     btn9 = types.KeyboardButton(text=txt["btn"]["country"][8])
-    markup.row(btn7, btn8, btn9)
+    btn11 = types.KeyboardButton(text=txt["btn"]["country"][10])
+    markup.row(btn7, btn8, btn9, btn11)
     return markup
 
 
