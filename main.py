@@ -394,7 +394,7 @@ def get_user_info(user_country, is_action=True):
         f"Эпоха: {era}\n"
     )
     if is_action:
-        res += f"Успех: {success}%\n"
+        res += f"Успех: {success}% (используй эту информацию, но не упомянай процент успеха в результате приказа!)\n"
     bot.send_message(-4707616830, text=res)
     return res
 
