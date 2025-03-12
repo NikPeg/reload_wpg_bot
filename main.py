@@ -49,11 +49,14 @@ def admin_new_year(message):
     markup = btn.main_menu()
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_new_year"].format(year = year), reply_markup=markup)
 
+
 @bot.message_handler(func=lambda message: str(message.chat.id) in config_bd["admin_list"] and message.text.lower() in ["answer", "/answer"])
 def send_admin_mail(message):
     markup = btn.country_list() 
     message = bot.send_message(message.chat.id, text = txt["msg"]["mail"], reply_markup=markup)
     bot.register_next_step_handler(message, send_admin_mail1)
+
+
 def send_admin_mail1(message):
     if message.text in txt["btn"]["country"]:
         with open(country_path, 'r+', encoding='utf-8') as user:
@@ -112,11 +115,9 @@ def map_change(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["admin_done"], reply_markup= btn.main_menu())
 
 
-
 @bot.message_handler(func=lambda message: message.chat.id == -4707616830)
 def i_hate(message):
     pass
-
 
 
 @bot.message_handler(func=lambda message: bd.is_logged(str(message.chat.id)))
@@ -126,6 +127,7 @@ def new_user(message):
     markup = btn.main_win_reg_nl2()
     message = bot.send_message(message.chat.id, txt["msg"]["start2"], reply_markup=markup)
     bot.register_next_step_handler(message, country_choose)
+
 
 @bot.message_handler(func=lambda message: "страна" == message.text.lower())
 def country_choose(message):
