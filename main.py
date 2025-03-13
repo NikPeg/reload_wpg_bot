@@ -365,7 +365,6 @@ def send_graphics(message):
         bot_trac(message)
         plt.close()
         plt.clf()    
-        
 
 
 @bot.message_handler(func=lambda message: "карта" == message.text.lower())
@@ -382,7 +381,7 @@ def unknow_command(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["unknown_text"], reply_markup=markup)
 
 
-def get_user_info(user_country, is_action=True):
+def get_user_info(user_country, years=0):
     success = random.randrange(1, 101)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
@@ -396,17 +395,19 @@ def get_user_info(user_country, is_action=True):
         f"Поддержка населения: {support}%\n"
         f"Эпоха: {era}\n"
     )
-    if is_action:
+    if years == 0:
         res += f"Кубик: {success}% (используй эту информацию, но не упомянай бросок кубика в результате приказа!)\n"
+    else:
+        res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
     return res
 
 
 def check_years(text, thread):
     era = config_bd["era"]
-    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999")
+    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
     bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
-    for word in answer.split():
+    for word in answer.split()[::-1]:
         word = word.translate(str.maketrans('', '', string.punctuation))
         if word.isdigit():
             bot.send_message(-4707616830, text="Parsed answer: " + word)
@@ -425,7 +426,7 @@ def to_gpt(message):
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
     years = check_years(message.text, user_thread)
-    info = get_user_info(user_country, years == 0)
+    info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
@@ -487,7 +488,8 @@ def new_year():
             time.sleep(1)
             try:
                 era = config_bd["era"]
-                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.", assist_id=config_bd["user_event_handler"])
+                info = get_user_info(country)
+                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.\n{info}", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
             except Exception as e:
@@ -497,7 +499,8 @@ def new_year():
                 for proj in user_list[str(id)]["projects"]:
                     if int(proj) <= int(year):
                         try:
-                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id=config_bd["project_assistent"])
+                            info = get_user_info(country)
+                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом:\n{user_list[str(id)]["projects"][proj]}\n{info}", assist_id=config_bd["project_assistent"])
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
