@@ -505,7 +505,7 @@ def new_year():
                     if int(proj) <= int(year):
                         try:
                             info = get_user_info(country)
-                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом:\n{user_list[str(id)]["projects"][proj]}\n{info}", assist_id=config_bd["project_assistent"])
+                            text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом:\n{user_list[str(id)]["projects"][proj]}\n{info}", assist_id=config_bd["user_event_handler"])
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
