@@ -402,7 +402,7 @@ def get_user_info(user_country, is_action=True):
 
 
 def check_action(text, thread):
-    answer = gpt.ask(f"Это сообщение игрока:\n{text}\nЯвляется ли сообщение игрока моментальным действием? Ответь только да или нет")
+    answer = gpt.ask(f"Это сообщение игрока:\n{text}\nЯвляется ли сообщение игрока действием? Действием считается любой проект, который можно выполнить быстрее, чем за год. Ответь только да или нет")
     bot.send_message(-4707616830, text="Ответ ассистента действия: " + answer)
     res = "не" not in answer.lower()
     return res
