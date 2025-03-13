@@ -401,11 +401,14 @@ def get_user_info(user_country, is_action=True):
     return res
 
 
-def check_action(text, thread):
-    answer = gpt.ask(f"Это сообщение игрока:\n{text}\nЗа сколько лет можно выполнить приказ игрока? Ответь числом от 0 до 100. Если сообщение игрока не является приказом, ответь 0")
-    bot.send_message(-4707616830, text="Ответ ассистента действия: " + answer)
-    res = "0" == answer[0]
-    return res
+def check_years(text, thread):
+    era = config_bd["era"]
+    answer = gpt.ask(f"Это сообщение игрока:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока не является приказом, ответь -1")
+    bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
+    for word in answer.split():
+        if word.isdigit():
+            return int(word)
+    return -1
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
@@ -417,30 +420,21 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
-    json_string = {}
-    try:
-        is_action = check_action(message.text, user_thread)
-        info = get_user_info(user_country, is_action)
-        text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
-        answer = text
-        json_string = text.replace("json", "")
-        json_string = json_string.replace("```", "").strip()
-        answer = json_string
-        json_string = json.loads(json_string)
-        bd.user_new_requests(str(message.chat.id))
-        answer = json_string.get("Результат приказа") or json_string.get("Результат поручения") or json_string
-    except Exception as e:
-        logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
-        print("Произошла ошибка. Подробности записаны в error.log")
-    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = answer)
+    years = check_years(message.text, user_thread)
+    info = get_user_info(user_country, years == 0)
+    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
+    bd.user_new_requests(str(message.chat.id))
+    bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
-    if json_string.get("Срок реализации", 0) != 0:
-        bd.new_project(id = str(message.chat.id), time = json_string["Срок реализации"], text = message.text)
-    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказывал {message.text}")
+    if years > 0:
+        bd.new_project(id = str(message.chat.id), time = years, text = message.text)
+    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
+    if not text:
+        bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
-    bot.send_message(-4707616830, json_string)
+    bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
     json_string = json.loads(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
@@ -488,11 +482,7 @@ def new_year():
             time.sleep(1)
             try:
                 era = config_bd["era"]
-                text = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.", assist_id=config_bd["user_event_handler"])
-                json_string = text.replace("json", "")
-                json_string = json_string.replace("```", "").strip()
-                d = json.loads(json_string)
-                answer = d.get("Результат приказа") or d.get("Результат поручения") or json_string
+                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
             except Exception as e:
