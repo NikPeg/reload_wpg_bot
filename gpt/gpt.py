@@ -155,6 +155,7 @@ def ask(text):
 
 if __name__ == "__main__":
     # Use your specific run and thread IDs
+    # thread_HS5tY59a2ixWRQuvQma9RjBL while a run run_zCwyNIbj6AkozigvNlk6qxnS is active
     run_id = "run_zCwyNIbj6AkozigvNlk6qxnS"
     thread_id = "thread_HS5tY59a2ixWRQuvQma9RjBL"
 
