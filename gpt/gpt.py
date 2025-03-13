@@ -145,10 +145,8 @@ def country_report(thread_id, assist_id, country, text, bot=None):
     return latest_message_text
 
 def ask(text):
-    client = openai.OpenAI()
-
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+    response = openai.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "user", "content": text}
         ]
@@ -156,13 +154,20 @@ def ask(text):
     return response.choices[0].message.content
 
 if __name__ == "__main__":
-    #text = new_assist()
-    # text = chat_gpt(thread = "thread_P67niks6tc70bVcHYFX7PWPk", text = f""" "GDP": [750, 800, 860], "population": [9,10,9],"rating_government": [95,90,93]" """, assist_id="asst_kDUKu8X0XuiHG06XyJsXA4nO")
-    #text = chat_gpt(thread = "thread_Y9vnu2DOBeDjCdgZS1RIfT6m", text = f"требую построить шаурмечную", assist_id="asst_Sw6TCHWpN8TlilWB0O5gZzxE")
-    #print(text)
-    #text = country_report("thread_5aSqLgWWRAok4gqmqW0JXItY", "asst_qTNw4fBtCWneSa0fokdyG57J", "Лурк", "приказываю запретить фтк вести торговую деятельность")
-    #print(text)
-    #text = chat_gpt(thread = "thread_5aSqLgWWRAok4gqmqW0JXItY", text = f"Сегодня в Лурке был выполнен приказ звучащий как: построить завод свинца. Подведи итоги этого события", assist_id="asst_rn04wllKx0B74u4dM13RvUnj")
-    #print(text) 
-    #country_report(1, 1, "Лурк", "meow")
-    pass   
+    # Use your specific run and thread IDs
+    run_id = "run_zCwyNIbj6AkozigvNlk6qxnS"
+    thread_id = "thread_HS5tY59a2ixWRQuvQma9RjBL"
+
+    # Cancel the run
+    response = openai.beta.threads.runs.cancel(
+        thread_id=thread_id,
+        run_id=run_id
+    )
+    # Check run status
+    run = openai.beta.threads.runs.retrieve(
+        thread_id=thread_id,
+        run_id=run_id
+    )
+
+    print(f"Run status: {run.status}")
+
