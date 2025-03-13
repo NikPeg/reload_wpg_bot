@@ -405,7 +405,7 @@ def get_user_info(user_country, years=0):
 
 def check_years(text, thread):
     era = config_bd["era"]
-    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
+    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Одним предложением объясни свой ответ")
     bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
     for word in answer.split()[::-1]:
         word = word.translate(str.maketrans('', '', string.punctuation))
@@ -509,6 +509,24 @@ def new_year():
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
+                            text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
+                            if not text:
+                                bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
+                                continue
+                            json_string = text.replace("json", "")
+                            json_string = json_string.replace("```", "").strip()
+                            bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
+                            json_string = json.loads(json_string)
+                            with open(country_path, 'r+', encoding='utf-8') as country:
+                                country_list = json.load(country)
+                            for country in json_string:
+                                if country == user_country:
+                                    continue
+                                if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
+                                    country_data = country_list[country]
+                                    if country_data["id"] != 0:
+                                        id = int(country_data["id"])
+                                        message = bot.send_message(id, text = json_string[country])
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                             print("Произошла ошибка. Подробности записаны в error.log")
