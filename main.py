@@ -29,7 +29,7 @@ picture_path = "picture.json"
 
 with open(config_path, "r", encoding='utf-8') as config:
     config_bd = json.load(config)
-bot = telebot.TeleBot(config_bd["tg_token"])
+bot = telebot.TeleBot(config_bd["tg_token"], parse_mode="MARKDOWN")
 openai.api_key = config_bd["chatGPT_token"]
 PUBLIC_ID = config_bd["PAYMENTS_ID"]
 API_SECRET =  config_bd["PAYMENTS_TOKEN"]
@@ -493,10 +493,7 @@ def new_year():
                     if int(proj) <= int(year):
                         try:
                             text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом: \n {user_list[str(id)]["projects"][proj]} \n ", assist_id=config_bd["project_assistent"])
-                            json_string = text.replace("json", "")
-                            json_string = json_string.replace("```", "").strip()
-                            text = json.loads(json_string)
-                            message = bot.send_message(id, text = text["Результат проекта"])
+                            message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
                         except Exception as e:
