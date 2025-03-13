@@ -434,6 +434,8 @@ def to_gpt(message):
     
     if years > 0 and years != 999:
         bd.new_project(id = str(message.chat.id), time = years, text = message.text)
+        return
+
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
     if not text:
         bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
