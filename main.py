@@ -492,6 +492,9 @@ def new_year():
                 answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.\n{info}", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
+                
+                answer = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных")
+                bot.send_message(-4707616830, "Новые показатели:\n" + answer)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
