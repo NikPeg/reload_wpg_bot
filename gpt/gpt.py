@@ -155,9 +155,6 @@ def ask(text):
     )
     return response.choices[0].message.content
 
-# Получить ответ
-answer = response.choices[0].message.content
-print(answer)
 if __name__ == "__main__":
     #text = new_assist()
     # text = chat_gpt(thread = "thread_P67niks6tc70bVcHYFX7PWPk", text = f""" "GDP": [750, 800, 860], "population": [9,10,9],"rating_government": [95,90,93]" """, assist_id="asst_kDUKu8X0XuiHG06XyJsXA4nO")
