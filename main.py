@@ -15,6 +15,7 @@ import numpy as np
 import logging
 import traceback 
 import random
+import string
 
 logging.basicConfig(filename="error.log", level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -403,11 +404,14 @@ def get_user_info(user_country, is_action=True):
 
 def check_years(text, thread):
     era = config_bd["era"]
-    answer = gpt.ask(f"Это сообщение игрока:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока не является приказом, ответь -1")
+    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999")
     bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
     for word in answer.split():
+        word = word.translate(str.maketrans('', '', string.punctuation))
         if word.isdigit():
+            bot.send_message(-4707616830, text="Parsed answer: " + word)
             return int(word)
+    bot.send_message(-4707616830, text="Parsed answer: -1")
     return -1
 
 
@@ -427,11 +431,12 @@ def to_gpt(message):
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
-    if years > 0:
+    if years > 0 and years != 999:
         bd.new_project(id = str(message.chat.id), time = years, text = message.text)
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
     if not text:
         bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
+        return
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
     bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
