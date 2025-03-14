@@ -397,7 +397,7 @@ def get_user_info(user_country, years=0):
     )
     if years == 0:
         res += f"Кубик: {success}% (используй эту информацию, но не упомянай бросок кубика в результате приказа!)\n"
-    else:
+    elif years != 999:
         res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
     return res
@@ -405,7 +405,7 @@ def get_user_info(user_country, years=0):
 
 def check_years(text, thread):
     era = config_bd["era"]
-    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Одним предложением объясни свой ответ")
+    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
     bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
     for word in answer.split()[::-1]:
         word = word.translate(str.maketrans('', '', string.punctuation))
@@ -444,9 +444,11 @@ def to_gpt(message):
     json_string = json_string.replace("```", "").strip()
     bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
     json_string = json.loads(json_string)
+    print(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
+        print(country)
         if country == user_country:
             continue
         if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
@@ -454,6 +456,7 @@ def to_gpt(message):
             if country_data["id"] != 0:
                 id = int(country_data["id"])
                 message = bot.send_message(id, text = json_string[country])
+                bot_trac(message)
 
 
 @bot.message_handler(func=lambda message: True)
@@ -515,7 +518,6 @@ def new_year():
                                 continue
                             json_string = text.replace("json", "")
                             json_string = json_string.replace("```", "").strip()
-                            bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
                             json_string = json.loads(json_string)
                             with open(country_path, 'r+', encoding='utf-8') as country:
                                 country_list = json.load(country)
