@@ -534,6 +534,8 @@ def new_year():
                                     if country_data["id"] != 0:
                                         id = int(country_data["id"])
                                         message = bot.send_message(id, text = json_string[country])
+                                        bot.send_message(-4707616830, f"Влияние на страну {country}:")
+                                        bot_trac(message)
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                             print("Произошла ошибка. Подробности записаны в error.log")
