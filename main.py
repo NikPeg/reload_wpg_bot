@@ -447,7 +447,6 @@ def to_gpt(message):
         return
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
-    bot.send_message(-4707616830, "Ассистент влияния на страны: " + json_string)
     json_string = json.loads(json_string)
     print(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
@@ -461,6 +460,7 @@ def to_gpt(message):
             if country_data["id"] != 0:
                 id = int(country_data["id"])
                 message = bot.send_message(id, text = json_string[country])
+                bot.send_message(-4707616830, f"Влияние на срану {country}:")
                 bot_trac(message)
 
 
