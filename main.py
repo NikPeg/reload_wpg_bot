@@ -503,7 +503,7 @@ def new_year():
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
                 
-                answer = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных")
+                answer = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 bot.send_message(-4707616830, "Новые показатели:\n" + answer)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
