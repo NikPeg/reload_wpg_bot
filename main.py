@@ -406,14 +406,13 @@ def get_user_info(user_country, years=0):
 def check_years(text, thread):
     era = config_bd["era"]
     answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
-    bot.send_message(-4707616830, text="Ответ ассистента времени: " + answer)
     for word in answer.split()[::-1]:
         word = word.translate(str.maketrans('', '', string.punctuation))
         if word.isdigit():
             bot.send_message(-4707616830, text="Parsed answer: " + word)
-            return int(word)
+            return int(word), answer
     bot.send_message(-4707616830, text="Parsed answer: -1")
-    return -1
+    return -1, None
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
@@ -425,7 +424,7 @@ def to_gpt(message):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
-    years = check_years(message.text, user_thread)
+    years, reason = check_years(message.text, user_thread)
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {message.text}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
@@ -434,6 +433,8 @@ def to_gpt(message):
     
     if years > 0 and years != 999:
         bd.new_project(id = str(message.chat.id), time = years, text = message.text)
+        message = bot.send_message(chat_id=for_edit.chat.id, text=reason)
+        bot_trac(message)
         return
 
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
