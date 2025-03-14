@@ -395,7 +395,7 @@ def get_user_info(user_country, years=0):
         f"Поддержка населения: {support}%\n"
         f"Эпоха: {era}\n"
     )
-    if years == 0:
+    if years == 0 or years == 999:
         res += f"Кубик: {success}% (используй эту информацию, но не упомянай бросок кубика в результате приказа!)\n"
     elif years != 999:
         res += f"Срок реализации: {years} лет\n"
