@@ -407,12 +407,13 @@ def check_years(text, thread):
     era = config_bd["era"]
     answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nЗа сколько лет можно выполнить приказ игрока в эпохе {era}? Ответь числом от 0 до 100. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
     for word in answer.split()[::-1]:
+        if "-" in word:
+            word = word.split("-")[0]
         word = word.translate(str.maketrans('', '', string.punctuation))
         if word.isdigit():
             bot.send_message(-4707616830, text="Parsed answer: " + word)
             return int(word), answer
-    bot.send_message(-4707616830, text="Parsed answer: -1")
-    return -1, None
+    return 999, None
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
