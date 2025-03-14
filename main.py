@@ -434,8 +434,9 @@ def to_gpt(message):
     
     if years > 0 and years != 999:
         bd.new_project(id = str(message.chat.id), time = years, text = message.text)
-        message = bot.send_message(chat_id=for_edit.chat.id, text=reason)
-        bot_trac(message)
+        # message = bot.send_message(chat_id=for_edit.chat.id, text=reason)
+        # bot_trac(message)
+        bot.send_message(-4707616830, text=reason)
         return
     if years == 999:
         return 
