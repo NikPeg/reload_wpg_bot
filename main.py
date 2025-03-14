@@ -437,6 +437,8 @@ def to_gpt(message):
         message = bot.send_message(chat_id=for_edit.chat.id, text=reason)
         bot_trac(message)
         return
+    if years == 999:
+        return 
 
     text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
     if not text:
