@@ -30,7 +30,7 @@ picture_path = "picture.json"
 
 with open(config_path, "r", encoding='utf-8') as config:
     config_bd = json.load(config)
-bot = telebot.TeleBot(config_bd["tg_token"], parse_mode="MARKDOWN")
+bot = telebot.TeleBot(config_bd["tg_token"])
 openai.api_key = config_bd["chatGPT_token"]
 PUBLIC_ID = config_bd["PAYMENTS_ID"]
 API_SECRET =  config_bd["PAYMENTS_TOKEN"]
