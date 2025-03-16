@@ -418,8 +418,16 @@ def check_years(text, thread):
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
-def to_gpt(message):
-    bot_trac(message)
+def to_gpt(message, text=None):
+    if not text:
+        bot_trac(message)
+
+    if not text and "|||" in message.text:
+        parts = message.text.split("|||")
+        for part in parts:
+            to_gpt(message, part)
+        return
+
     for_edit = bot.send_message(message.chat.id, text=txt["msg"]["gpt_thinks"])
     with open(user_path, 'r+', encoding='utf-8') as user:
         data = json.load(user)
