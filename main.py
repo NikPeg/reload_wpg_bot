@@ -418,7 +418,11 @@ def check_years(text, thread):
 
 
 @bot.message_handler(func=lambda message: bd.user_requests_upgrade(message.chat.id))
-def to_gpt(message, text=None):
+def to_gpt(message):
+    handle_gpt_message(message)
+
+
+def handle_gpt_message(message, text=None):
     if not text:
         bot_trac(message)
 
