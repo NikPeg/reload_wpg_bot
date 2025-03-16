@@ -101,7 +101,7 @@ def chat_gpt(thread, text: str, assist_id="1"):
 
 
 
-def country_report(thread_id, assist_id, country, text, bot=None):
+def country_report(thread_id, assist_id, country, text, answer, bot=None):
     data = {}
     with open(country_path, 'r+', encoding='utf-8') as cfile:
         country_bd = json.load(cfile)
@@ -118,7 +118,7 @@ def country_report(thread_id, assist_id, country, text, bot=None):
         if random.random() <= 0.15:
             final_data[key] = 2
             data.pop(key, None)
-        elif key[:-1] in text:
+        elif key[:-1] in text or key[:-1] in answer:
             final_data[key] = 2
             data.pop(key, None)
     final_data = str({key: value for key, value in final_data.items() if value != 0})
