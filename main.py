@@ -431,7 +431,7 @@ def handle_gpt_message(message, text=None):
         for part in parts:
             handle_gpt_message(message, text=part)
         return
-    else:
+    elif not text:
         text = message.text
 
     for_edit = bot.send_message(message.chat.id, text=txt["msg"]["gpt_thinks"])
