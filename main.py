@@ -422,17 +422,17 @@ def to_gpt(message):
     handle_gpt_message(message)
 
 
-def handle_gpt_message(message, text=None):
-    if not text:
+def handle_gpt_message(message, request=None):
+    if not request:
         bot_trac(message)
     separator = "\n\n"
-    if not text and separator in message.text:
+    if not request and separator in message.text:
         parts = message.text.split(separator)
         for part in parts:
             handle_gpt_message(message, text=part)
         return
-    elif not text:
-        text = message.text
+    elif not request:
+        request = message.text
 
     for_edit = bot.send_message(message.chat.id, text=txt["msg"]["gpt_thinks"])
     with open(user_path, 'r+', encoding='utf-8') as user:
@@ -440,33 +440,31 @@ def handle_gpt_message(message, text=None):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
-    years = check_years(text, user_thread)
+    years = check_years(request, user_thread)
     info = get_user_info(user_country, years)
-    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {text}\n{info}", assist_id=config_bd["user_event_handler"])
+    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
     if years > 0 and years != 999:
-        bd.new_project(id = str(message.chat.id), time = years, text = text)
+        bd.new_project(id = str(message.chat.id), time = years, text = request)
         message = bot.send_message(chat_id=for_edit.chat.id, text=f"🚀Проект начат. Срок реализации: {years} лет⏳")
         bot_trac(message)
         return
     if years == 999:
         return 
 
-    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {text}")
+    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {request}")
     if not text:
         bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
         return
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
     json_string = json.loads(json_string)
-    print(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
     for country in json_string:
-        print(country)
         if country == user_country:
             continue
         if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
