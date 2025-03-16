@@ -425,9 +425,9 @@ def to_gpt(message):
 def handle_gpt_message(message, text=None):
     if not text:
         bot_trac(message)
-
-    if not text and "|||" in message.text:
-        parts = message.text.split("|||")
+    separator = "\n\n"
+    if not text and separator in message.text:
+        parts = message.text.split(separator)
         for part in parts:
             handle_gpt_message(message, text=part)
         return
