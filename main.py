@@ -517,7 +517,7 @@ def new_year():
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
-                            text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {message.text}")
+                            text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}")
                             if not text:
                                 bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
                                 continue
@@ -526,15 +526,15 @@ def new_year():
                             json_string = json.loads(json_string)
                             with open(country_path, 'r+', encoding='utf-8') as country:
                                 country_list = json.load(country)
-                            for country in json_string:
-                                if country == user_country:
+                            for new_country in json_string:
+                                if new_country == country:
                                     continue
-                                if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
-                                    country_data = country_list[country]
+                                if new_country in country_list and isinstance(country_list[new_country], dict) and "id" in country_list[new_country]:
+                                    country_data = country_list[new_country]
                                     if country_data["id"] != 0:
                                         id = int(country_data["id"])
-                                        message = bot.send_message(id, text = json_string[country])
-                                        bot.send_message(-4707616830, f"Влияние на страну {country}:")
+                                        message = bot.send_message(id, text = json_string[new_country])
+                                        bot.send_message(-4707616830, f"Влияние на страну {new_country}:")
                                         bot_trac(message)
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
