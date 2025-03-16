@@ -429,7 +429,7 @@ def handle_gpt_message(message, request=None):
     if not request and separator in message.text:
         parts = message.text.split(separator)
         for part in parts:
-            handle_gpt_message(message, text=part)
+            handle_gpt_message(message, request=part)
         return
     elif not request:
         request = message.text
