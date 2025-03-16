@@ -442,7 +442,7 @@ def handle_gpt_message(message, request=None):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
-    years = check_years(request, user_thread, message.chat.id in config_bd["admin_list"])
+    years = check_years(request, user_thread, str(message.chat.id) in config_bd["admin_list"])
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
