@@ -425,7 +425,7 @@ def to_gpt(message, text=None):
     if not text and "|||" in message.text:
         parts = message.text.split("|||")
         for part in parts:
-            to_gpt(message, part)
+            to_gpt(message, text=part)
         return
 
     for_edit = bot.send_message(message.chat.id, text=txt["msg"]["gpt_thinks"])
