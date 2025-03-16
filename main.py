@@ -457,7 +457,7 @@ def handle_gpt_message(message, request=None):
     if years == 999:
         return 
 
-    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {request}")
+    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {request}", answer=text)
     if not text:
         bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
         return
@@ -527,7 +527,7 @@ def new_year():
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
-                            text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}. Проект уже завершен")
+                            text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}. Проект уже завершен", answer=text)
                             if not text:
                                 bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
                                 continue
