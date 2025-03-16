@@ -486,15 +486,6 @@ def new_year():
             with open(user_path, 'r+', encoding='utf-8') as user:
                 data = json.load(user)
             user_thread = data[str(id)]["id_thread"]
-            try:
-                graph = gpt.chat_gpt(thread = user_thread, text = str(bd.get_graph_history(country)), assist_id=config_bd["statistic_graph"])
-                json_string = graph.replace("json", "")
-                json_string = json_string.replace("```", "").strip()
-                graph = json.loads(json_string)
-                bd.mod_graph(country, graph)
-            except Exception as e:
-                logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
-                print("Произошла ошибка. Подробности записаны в error.log")
             time.sleep(1)
             try:
                 era = config_bd["era"]
@@ -503,8 +494,13 @@ def new_year():
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
                 
-                answer = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
-                bot.send_message(-4707616830, "Новые показатели:\n" + answer)
+                graph = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                message = bot.send_message(id, "Новые показатели:\n" + graph)
+                bot_trac(message)
+                json_string = graph.replace("json", "")
+                json_string = json_string.replace("```", "").strip()
+                graph = json.loads(json_string)
+                bd.mod_graph(country, graph)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                 print("Произошла ошибка. Подробности записаны в error.log")
