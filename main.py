@@ -403,7 +403,9 @@ def get_user_info(user_country, years=0):
     return res
 
 
-def check_years(text, thread):
+def check_years(text, thread, is_admin=False):
+    if is_admin:
+        return 0
     era = config_bd["era"]
     answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nНапиши срок реализации приказа игрока в эпохе {era}. Ответь числом от 0 до 100 лет. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
     bot.send_message(-4707616830, text=answer)
@@ -440,7 +442,7 @@ def handle_gpt_message(message, request=None):
     user_country = data[str(message.chat.id)]["country"]
     user_thread = data[str(message.chat.id)]["id_thread"]
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
-    years = check_years(request, user_thread)
+    years = check_years(request, user_thread, message.chat.id in config_bd["admin_list"])
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
