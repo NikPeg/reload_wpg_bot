@@ -449,7 +449,7 @@ def handle_gpt_message(message, text=None):
     
     if years > 0 and years != 999:
         bd.new_project(id = str(message.chat.id), time = years, text = text)
-        message = bot.send_message(chat_id=for_edit.chat.id, text=f"Проект начат. Срок реализации: {years} лет")
+        message = bot.send_message(chat_id=for_edit.chat.id, text=f"🚀Проект начат. Срок реализации: {years} лет⏳")
         bot_trac(message)
         return
     if years == 999:
