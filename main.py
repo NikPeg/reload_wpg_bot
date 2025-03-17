@@ -415,7 +415,7 @@ def check_years(text, thread, is_admin=False):
         word = word.translate(str.maketrans('', '', string.punctuation))
         if word.isdigit():
             bot.send_message(-4707616830, text="Parsed answer: " + word)
-            return int(word)
+            return int(word) // 5
     return 999
 
 
