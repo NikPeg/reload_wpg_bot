@@ -193,8 +193,8 @@ def mod_graph(country, d):
     with open(country_path, 'r+', encoding='utf-8') as cfile:
         data = json.load(cfile)
         for key, value in d.items():
+            key = translate[key]
             if type(value) == 'list':
-                key = translate[key]
                 data[country][key].append(int(value[0]))
                 continue
             data[country][key].append(int(value))
