@@ -446,6 +446,7 @@ def handle_gpt_message(message, request=None):
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
+    text = text.replace("**", "")
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
@@ -509,11 +510,13 @@ def new_year():
                 bot_trac(message)
                 
                 graph = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
-                message = bot.send_message(id, "Новые показатели:\n" + graph)
                 bot_trac(message)
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
+                gdp, population, rating = tuple(graph.values())
+                message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд паромонет\nНаселение: {population} млн человек\nРейтинг: {rating}%")
+                bot_trac(message)
                 bd.mod_graph(country, graph)
             except Exception as e:
                 logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
