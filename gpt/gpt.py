@@ -142,7 +142,7 @@ def country_report(thread_id, assist_id, country, text, answer, bot=None):
     messages = openai.beta.threads.messages.list(thread_id=thread_id)
     latest_message = messages.data[0]
     latest_message_text = latest_message.content[0].text.value
-    return latest_message_text
+    return latest_message_text.replace("**", "")
 
 def ask(text):
     response = openai.chat.completions.create(
