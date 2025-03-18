@@ -507,7 +507,7 @@ def new_year():
             try:
                 era = config_bd["era"]
                 info = get_user_info(country)
-                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши список главных новостей, произошедших за последний год в стране {country}, пиши кратко и по пунктам. Пиши реалистичные новости для эпохи {era}, не только хорошие новости.\n{info}", assist_id=config_bd["user_event_handler"])
+                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко. Опиши реалистичную новости для эпохи {era}, необязательно хорошую новость.\n{info}", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
                 bot_trac(message)
                 

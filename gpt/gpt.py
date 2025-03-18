@@ -93,7 +93,7 @@ def chat_gpt(thread, text: str, assist_id="1"):
                 if last_message.content:
                     for content_item in last_message.content:
                         if content_item.type == "text":
-                            return content_item.text.value
+                            return content_item.text.value.replace("**", "*")
     except Exception as e: # Обрабатываем ошибки
         print(f"Ошибка при получении сообщения: {e}")
         return None
