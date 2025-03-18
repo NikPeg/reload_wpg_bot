@@ -335,7 +335,7 @@ def send_graphics_without_perm(message):
 def get_top_countries(user_id):
     with open(country_path, 'r', encoding='utf-8') as cfile:
         data = json.load(cfile)
-
+    countries_data = []
     for country, country_data in data.items():
         # Пропускаем страну "Администрация"
         if country == "Администрация":
@@ -374,7 +374,7 @@ def get_top_countries(user_id):
     top_support = sorted(countries_data, key=lambda x: x["support"], reverse=True)[:5]
     top = "Топ-5 стран по поддержке населения:\n"
     for i, country in enumerate(top_support, 1):
-        top += f"{i}. {country['name']} - {country['support']}%"
+        top += f"{i}. {country['name']} - {country['support']}%\n"
     bot.send_message(user_id, top)
 
     # Сортировка и вывод топ-5 по ВВП на душу населения
