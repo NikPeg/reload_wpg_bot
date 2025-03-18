@@ -186,7 +186,7 @@ def get_graph_history(country):
         return mdata
 
 
-translate = {"ВВП": "GDP", "Население": "population", "Поддержка населения": "rating_government"}
+translate = {"ВВП": "GDP", "Население": "population", "Поддержка населения": "rating_government", "Ввп": "GDP", "Новый ввп": "GDP", "Gdp": "GDP"}
 
 
 def mod_graph(country, d):
