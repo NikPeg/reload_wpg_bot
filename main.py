@@ -331,6 +331,61 @@ def send_graphics_without_perm(message):
     message = bot.send_message(message.chat.id, text = txt["msg"]["small_sub_3"], reply_markup=markup)
     bot_trac(message)
 
+
+def get_top_countries(user_id):
+    with open(country_path, 'r', encoding='utf-8') as cfile:
+        data = json.load(cfile)
+
+    for country in data:
+        # Пропускаем страну "Администрация"
+        if country == "Администрация":
+            continue
+
+        country_data = get_graph_history(country)
+        gdp = country_data["GDP"][-1]
+        population = country_data["population"][-1]
+        support = country_data["rating_government"][-1]
+
+        # Расчет ВВП на душу населения
+        gdp_per_capita = gdp / population if population > 0 else 0
+
+        countries_data.append({
+            "name": country,
+            "gdp": gdp,
+            "population": population,
+            "support": support,
+            "gdp_per_capita": gdp_per_capita
+        })
+
+    # Сортировка и вывод топ-5 по ВВП
+    top_gdp = sorted(countries_data, key=lambda x: x["gdp"], reverse=True)[:5]
+    top = "Топ-5 стран по ВВП:\n"
+    for i, country in enumerate(top_gdp, 1):
+        top += f"{i}. {country['name']} - {country['gdp']:.2f} млрд паромонет\n"
+    bot.send_message(user_id, top)
+
+    # Сортировка и вывод топ-5 по населению
+    top_population = sorted(countries_data, key=lambda x: x["population"], reverse=True)[:5]
+    top = "Топ-5 стран по населению:\n"
+    for i, country in enumerate(top_population, 1):
+        top += f"{i}. {country['name']} - {country['population']:.2f} млн человек\n"
+    bot.send_message(user_id, top)
+
+    # Сортировка и вывод топ-5 по поддержке населения
+    top_support = sorted(countries_data, key=lambda x: x["support"], reverse=True)[:5]
+    top = "Топ-5 стран по поддержке населения:\n"
+    for i, country in enumerate(top_support, 1):
+        top += f"{i}. {country['name']} - {country['support']}%"
+    bot.send_message(user_id, top)
+
+    # Сортировка и вывод топ-5 по ВВП на душу населения
+    top_gdp_per_capita = sorted(countries_data, key=lambda x: x["gdp_per_capita"], reverse=True)[:5]
+    top = "Топ-5 стран по ВВП на душу населения:\n"
+    for i, country in enumerate(top_gdp_per_capita, 1):
+        top += f"{i}. {country['name']} - {country['gdp_per_capita']:.2f} паромонет\n"
+    bot.send_message(user_id, top)
+
+
 @bot.message_handler(func=lambda message: "графики" == message.text.lower() and bd.perm_for_command(str(message.chat.id), 3))
 def send_graphics(message):
     with open(user_path, "r", encoding='utf-8') as user:
@@ -365,6 +420,7 @@ def send_graphics(message):
         bot_trac(message)
         plt.close()
         plt.clf()    
+    get_top_countries(message.chat.id)
 
 
 @bot.message_handler(func=lambda message: "карта" == message.text.lower())
@@ -508,7 +564,7 @@ def new_year():
                 era = config_bd["era"]
                 info = get_user_info(country)
                 answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко. Опиши реалистичную новости для эпохи {era}, необязательно хорошую новость.\n{info}", assist_id=config_bd["user_event_handler"])
-                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью: \n {answer}")
+                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 
                 graph = gpt.ask(f"Проанализируй эти новости: {answer}\n{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
