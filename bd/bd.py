@@ -9,23 +9,50 @@ config_path = os.path.join(current_dir, "..", "config.json")
 year_path = os.path.join(current_dir, "..", "year.json")
 picture_path = os.path.join(current_dir, "..", "picture.json")
 
+
 def user_requests_upgrade(id: str):
     id = str(id)
     with open(user_path, 'r+', encoding='utf-8') as ufile:
         data = json.load(ufile)
-        now = datetime.datetime.now()
+        
+        # Получаем серверное время
+        server_now = datetime.datetime.now()
+        
+        # Добавляем 3 часа для получения игрового времени
+        game_now = server_now + datetime.timedelta(hours=3)
+        
+        # Начало игровых суток (00:00)
+        game_today_start = game_now.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Конвертируем обратно в серверное время для сравнения с записями
+        server_today_start = game_today_start - datetime.timedelta(hours=3)
+        
         with open(config_path, 'r', encoding='utf-8') as confile:
             condata = json.load(confile)
-        max_req = condata[f"sub_lvl_req_max_{data[str(id)]["sub_lvl"]}"]
-        data[id]["req"] = [
+        
+        max_req = condata[f"sub_lvl_req_max_{data[str(id)]['sub_lvl']}"]
+        
+        # Фильтруем только запросы за текущие игровые сутки
+        current_day_requests = [
             req_time
             for req_time in data[str(id)]["req"]
-            if (now - datetime.datetime.fromisoformat(req_time)).days < 1
+            if datetime.datetime.fromisoformat(req_time) >= server_today_start
         ]
-        if len(data[str(id)]["req"]) < max_req:
+        
+        # Полностью заменяем список запросов, удаляя все старые
+        data[id]["req"] = current_day_requests
+        
+        # Перемещаем позицию в начало файла и обновляем данные
+        ufile.seek(0)
+        json.dump(data, ufile, ensure_ascii=False, indent=4)
+        ufile.truncate()
+        
+        # Проверяем, может ли пользователь сделать запрос
+        if len(current_day_requests) < max_req:
             return True
         else:
             return False
+
 
 def user_new_requests(id: str):
     id = str(id)
