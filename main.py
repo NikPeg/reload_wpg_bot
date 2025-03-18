@@ -336,12 +336,11 @@ def get_top_countries(user_id):
     with open(country_path, 'r', encoding='utf-8') as cfile:
         data = json.load(cfile)
 
-    for country in data:
+    for country, country_data in data.items():
         # Пропускаем страну "Администрация"
         if country == "Администрация":
             continue
 
-        country_data = get_graph_history(country)
         gdp = country_data["GDP"][-1]
         population = country_data["population"][-1]
         support = country_data["rating_government"][-1]
