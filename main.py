@@ -516,7 +516,7 @@ def new_year():
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
                 gdp, population, rating = tuple(graph.values())
-                message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд паромонет\nНаселение: {population} млн человек\nРейтинг: {rating}%")
+                message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp}\nНаселение: {population}\nРейтинг: {rating}")
                 bot_trac(message)
                 bd.mod_graph(country, graph)
             except Exception as e:
