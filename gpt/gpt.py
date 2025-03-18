@@ -146,7 +146,7 @@ def country_report(thread_id, assist_id, country, text, answer, bot=None):
 
 def ask(text):
     response = openai.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": text}
         ]
