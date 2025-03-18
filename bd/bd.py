@@ -225,8 +225,9 @@ def mod_graph(country, d):
             if type(value) == 'list':
                 data[country][key].append(int(value[0]))
                 continue
-            value = value.split()[0]
-            data[country][key].append(int(value))
+            if isinstance(value, str):
+                value = value.split()[0]
+            data[country][key].append(float(value))
         cfile.seek(0)
         json.dump(data, cfile, indent=4, ensure_ascii=False)
         cfile.truncate()
