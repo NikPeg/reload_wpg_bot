@@ -459,6 +459,7 @@ def get_user_info(user_country, years=0):
 
 
 def check_years(text, thread, is_admin=False):
+    return 0
     if is_admin:
         return 0
     era = config_bd["era"]
