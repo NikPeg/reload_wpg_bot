@@ -566,7 +566,7 @@ def new_year():
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 
-                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                graph = gpt.ask(f"{info}\nНапиши немного меньшие показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
