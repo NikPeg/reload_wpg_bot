@@ -502,7 +502,7 @@ def handle_gpt_message(message, request=None):
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
     years = check_years(request, user_thread, str(message.chat.id) in config_bd["admin_list"])
     info = get_user_info(user_country, years)
-    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}\nОтветь коротко, одним абзацем", assist_id=config_bd["user_event_handler"])
+    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}\nНапиши результат приказа коротко, одним абзацем", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
     text = text.replace("**", "")
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
