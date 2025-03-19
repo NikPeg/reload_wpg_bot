@@ -213,15 +213,14 @@ def get_graph_history(country):
         return mdata
 
 
-translate = {"ВВП": "GDP", "Население": "population", "Поддержка населения": "rating_government", "Ввп": "GDP", "Новый ввп": "GDP", "Gdp": "GDP"}
+translate = ["GDP", "population", "rating_government"]
 
 
 def mod_graph(country, d):
     with open(country_path, 'r+', encoding='utf-8') as cfile:
         data = json.load(cfile)
-        for key, value in d.items():
-            key = key.capitalize()
-            key = translate.get(key, key)
+        for i, value in enumerate(d.values()):
+            key = translate[i]
             if type(value) == 'list':
                 data[country][key].append(int(value[0]))
                 continue
@@ -231,6 +230,7 @@ def mod_graph(country, d):
         cfile.seek(0)
         json.dump(data, cfile, indent=4, ensure_ascii=False)
         cfile.truncate()
+
 
 def change_photo(key, value):
     with open(picture_path, 'r+', encoding='utf-8') as pfile:
