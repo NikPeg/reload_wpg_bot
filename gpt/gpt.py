@@ -3,6 +3,9 @@ import json
 import os
 import time 
 import random
+import threading
+from typing import Optional
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 user_path = os.path.join(current_dir, "..", "user.json")
 config_path = os.path.join(current_dir, "..", "config.json")
@@ -57,57 +60,129 @@ def new_assist():
     return assistant
 
 
+# Global lock for the single shared thread
+_thread_lock = threading.Lock()
+_active_run = None
+
+
 def chat_gpt(thread, text: str, assist_id="1"):
-    assist_id = assist_id
+    """
+    Send a message to the shared thread and wait if there's an active run.
     
-    # First, check if there are any active runs on the thread
-    try:
-        runs = openai.beta.threads.runs.list(thread_id=thread)
-        active_runs = [run for run in runs.data if run.status in ["queued", "in_progress", "cancelling"]]
+    Args:
+        thread: The shared OpenAI thread ID
+        text: User's message
+        assist_id: Assistant ID to use
         
-        # If there are active runs, wait for them to complete
-        for run in active_runs:
-            wait_for_run_completion(thread, run.id)
-    except Exception as e:
-        print(f"Error checking active runs: {str(e)}")
+    Returns:
+        Assistant's response or None if there was an error
+    """
+    global _active_run
     
-    # Now it's safe to add a new message
-    try:
-        message = openai.beta.threads.messages.create(
-            thread_id=thread,
-            role="user",
-            content=text
-        )
-    except Exception as e:
-        print(f"Error creating message: {str(e)}")
-        time.sleep(1)
-        message = openai.beta.threads.messages.create(
-            thread_id=thread,
-            role="user",
-            content=text
-        )
-    
-    # Create a new run
-    try:
-        run = openai.beta.threads.runs.create(
-            thread_id=thread,
-            assistant_id=assist_id
-        )
-    except Exception as e:
-        print(f"Error creating run: {str(e)}")
+    # Acquire the global lock to ensure exclusive access to the thread
+    with _thread_lock:
+        # Check if there's an active run and wait for it to complete
+        if _active_run:
+            wait_for_run(thread, _active_run)
+            _active_run = None
+        
+        # Send the message
         try:
-            time.sleep(3)
+            openai.beta.threads.messages.create(
+                thread_id=thread,
+                role="user",
+                content=text
+            )
+        except Exception as e:
+            print(f"Error sending message, retrying: {str(e)}")
+            time.sleep(1)
+            try:
+                openai.beta.threads.messages.create(
+                    thread_id=thread,
+                    role="user",
+                    content=text
+                )
+            except Exception as e:
+                print(f"Failed to send message after retry: {str(e)}")
+                return None
+        
+        # Create a new run
+        try:
             run = openai.beta.threads.runs.create(
                 thread_id=thread,
                 assistant_id=assist_id
             )
+            # Store the active run ID
+            _active_run = run.id
         except Exception as e:
-            print(f"Failed to create run after retry: {str(e)}")
+            print(f"Error creating run, retrying: {str(e)}")
+            time.sleep(3)
+            try:
+                run = openai.beta.threads.runs.create(
+                    thread_id=thread,
+                    assistant_id=assist_id
+                )
+                _active_run = run.id
+            except Exception as e:
+                print(f"Failed to create run after retry: {str(e)}")
+                _active_run = None
+                return None
+    
+    # Wait for the run to complete (released the lock so others can check)
+    response = wait_for_run_and_get_response(thread, _active_run)
+    
+    # Reset the active run when done
+    with _thread_lock:
+        if _active_run == run.id:
+            _active_run = None
+            
+    return response
+
+
+def wait_for_run(thread_id: str, run_id: str, timeout: int = 30) -> bool:
+    """Wait for a specific run to complete."""
+    start_time = time.time()
+    
+    while time.time() - start_time < timeout:
+        try:
+            run = openai.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run_id
+            )
+            
+            if run.status not in ["queued", "in_progress", "cancelling"]:
+                return True  # Run is no longer active
+                
+            # Sleep before checking again
+            time.sleep(1)
+            
+        except Exception as e:
+            print(f"Error checking run status: {str(e)}")
+            time.sleep(2)
+    
+    print(f"Timed out waiting for run {run_id}")
+    return False
+
+
+def wait_for_run_and_get_response(thread_id: str, run_id: str, timeout: int = 30) -> Optional[str]:
+    """Wait for a run to complete and return the assistant's response."""
+    if wait_for_run(thread_id, run_id, timeout):
+        try:
+            # Get the assistant's response
+            messages = openai.beta.threads.messages.list(thread_id=thread_id)
+            for msg in messages.data:
+                if msg.role == "assistant":
+                    # Extract text content from the message
+                    content = [part.text.value for part in msg.content if hasattr(part, 'text')]
+                    return '\n'.join(content) if content else None
+                    
+            return None  # No assistant messages found
+            
+        except Exception as e:
+            print(f"Error retrieving messages: {str(e)}")
             return None
     
-    # Wait for the run to complete and return the result
-    result = wait_for_run_completion(thread, run.id)
-    return result
+    return None  # Run didn't complete successfully
 
 
 def wait_for_run_completion(thread_id, run_id, timeout=30):
@@ -148,44 +223,9 @@ def wait_for_run_completion(thread_id, run_id, timeout=30):
     return None
 
 
+def country_report(*args, **kwargs):
+    return ""
 
-def country_report(thread_id, assist_id, country, text, answer, bot=None):
-    data = {}
-    with open(country_path, 'r+', encoding='utf-8') as cfile:
-        country_bd = json.load(cfile)
-        for country_1 in country_bd:
-            data[country_1] = 0
-    final_data = dict(data)
-    
-    final_data[country] = text
-    del data[country]
-    for key in list(data.keys()):
-        if key[:-1] in text or key[:-1] in answer:
-            final_data[key] = 2
-            data.pop(key, None)
-    final_data = str({key: value for key, value in final_data.items() if value != 0})
-    openai.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=final_data
-    )
-    run = openai.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assist_id
-    )
-    while True:
-        run_status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id).status
-        if run_status == "completed":
-            break
-        elif run_status == "failed":
-            return  "failed"
-        time.sleep(1)
-    messages = openai.beta.threads.messages.list(thread_id=thread_id)
-    latest_message = messages.data[0]
-    if not latest_message.content:
-        return "Нет ответа"
-    latest_message_text = latest_message.content[0].text.value
-    return latest_message_text.replace("**", "")
 
 def ask(text):
     response = openai.chat.completions.create(

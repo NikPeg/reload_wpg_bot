@@ -27,7 +27,6 @@ year_path = "year.json"
 picture_path = "picture.json"
 
 
-
 with open(config_path, "r", encoding='utf-8') as config:
     config_bd = json.load(config)
 bot = telebot.TeleBot(config_bd["tg_token"])
@@ -437,7 +436,7 @@ def unknow_command(message):
 
 
 def get_user_info(user_country, years=0):
-    success = random.randrange(1, 101)
+    success = 13  # random.randrange(1, 101)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
     population = data["population"][-1]
@@ -521,6 +520,7 @@ def handle_gpt_message(message, request=None):
         return
     json_string = text.replace("json", "")
     json_string = json_string.replace("```", "").strip()
+    print(json_string)
     json_string = json.loads(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
@@ -592,6 +592,7 @@ def new_year():
                                 continue
                             json_string = text.replace("json", "")
                             json_string = json_string.replace("```", "").strip()
+                            print(json_string)
                             json_string = json.loads(json_string)
                             with open(country_path, 'r+', encoding='utf-8') as country:
                                 country_list = json.load(country)
