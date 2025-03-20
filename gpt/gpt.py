@@ -149,6 +149,8 @@ def country_report(thread_id, assist_id, country, text, answer, bot=None):
         time.sleep(1)
     messages = openai.beta.threads.messages.list(thread_id=thread_id)
     latest_message = messages.data[0]
+    if not latest_message.content:
+        return "Нет ответа"
     latest_message_text = latest_message.content[0].text.value
     return latest_message_text.replace("**", "")
 
