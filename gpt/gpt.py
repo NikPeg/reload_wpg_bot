@@ -59,11 +59,19 @@ def new_assist():
 
 def chat_gpt(thread, text: str, assist_id="1"):
     assist_id = assist_id
-    openai.beta.threads.messages.create(
-        thread_id=thread,
-        role="user",
-        content=text
-    )
+    try:
+        openai.beta.threads.messages.create(
+            thread_id=thread,
+            role="user",
+            content=text
+        )
+    except:
+        time.sleep(1)
+        openai.beta.threads.messages.create(
+            thread_id=thread,
+            role="user",
+            content=text
+        )
     try:
         run = openai.beta.threads.runs.create(
             thread_id=thread,
