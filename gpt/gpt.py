@@ -59,53 +59,93 @@ def new_assist():
 
 def chat_gpt(thread, text: str, assist_id="1"):
     assist_id = assist_id
+    
+    # First, check if there are any active runs on the thread
     try:
-        openai.beta.threads.messages.create(
+        runs = openai.beta.threads.runs.list(thread_id=thread)
+        active_runs = [run for run in runs.data if run.status in ["queued", "in_progress", "cancelling"]]
+        
+        # If there are active runs, wait for them to complete
+        for run in active_runs:
+            wait_for_run_completion(thread, run.id)
+    except Exception as e:
+        print(f"Error checking active runs: {str(e)}")
+    
+    # Now it's safe to add a new message
+    try:
+        message = openai.beta.threads.messages.create(
             thread_id=thread,
             role="user",
             content=text
         )
-    except:
+    except Exception as e:
+        print(f"Error creating message: {str(e)}")
         time.sleep(1)
-        openai.beta.threads.messages.create(
+        message = openai.beta.threads.messages.create(
             thread_id=thread,
             role="user",
             content=text
         )
+    
+    # Create a new run
     try:
         run = openai.beta.threads.runs.create(
             thread_id=thread,
             assistant_id=assist_id
         )
-    except:
+    except Exception as e:
+        print(f"Error creating run: {str(e)}")
         try:
             time.sleep(3)
             run = openai.beta.threads.runs.create(
                 thread_id=thread,
                 assistant_id=assist_id
             )
-        except:
+        except Exception as e:
+            print(f"Failed to create run after retry: {str(e)}")
             return None
-    while True:
-        run_status = openai.beta.threads.runs.retrieve(thread_id=thread, run_id=run.id).status
-        if run_status == "completed":
-            break
-        elif run_status == "failed":
-            return "failed"
-        time.sleep(1)
-    try:
-        messages = openai.beta.threads.messages.list(thread_id=thread, order="desc", limit=1)
-        if messages.data:
-            last_message = messages.data[0] # Самое последнее сообщение
-            if last_message.role == "assistant": # проверяем роль
-                if last_message.content:
-                    for content_item in last_message.content:
-                        if content_item.type == "text":
-                            return content_item.text.value.replace("**", "")
-    except Exception as e: # Обрабатываем ошибки
-        print(f"Ошибка при получении сообщения: {e}")
-        return None
+    
+    # Wait for the run to complete and return the result
+    result = wait_for_run_completion(thread, run.id)
+    return result
 
+
+def wait_for_run_completion(thread_id, run_id, timeout=30):
+    """Wait for a run to complete and return the result."""
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        try:
+            run = openai.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run_id
+            )
+            
+            if run.status == "completed":
+                # Retrieve the latest messages
+                messages = openai.beta.threads.messages.list(
+                    thread_id=thread_id
+                )
+                # Return the assistant's most recent message
+                for msg in messages.data:
+                    if msg.role == "assistant":
+                        # Extract text content from the message
+                        content = [part.text.value for part in msg.content if hasattr(part, 'text')]
+                        return '\n'.join(content) if content else None
+                return None
+            
+            elif run.status in ["failed", "cancelled", "expired"]:
+                print(f"Run ended with status: {run.status}")
+                return None
+            
+            # Sleep before checking again
+            time.sleep(2)
+            
+        except Exception as e:
+            print(f"Error checking run status: {str(e)}")
+            time.sleep(2)
+    
+    print("Run timed out")
+    return None
 
 
 
