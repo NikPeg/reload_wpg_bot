@@ -452,7 +452,7 @@ def get_user_info(user_country, years=0):
     #)
     res = ""
     if years == 0 or years == 999:
-        res += f"Кубик: {success}% (учитывай бросок кубика в ответе)\n"
+        res += f"Кубик: {success}% (учитывай бросок кубика в ответе, но не упомянай его)\n"
     elif years != 999:
         res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
@@ -505,7 +505,6 @@ def handle_gpt_message(message, request=None):
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}\nНапиши результат приказа коротко, одним абзацем", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
-    text = text.replace("**", "")
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
