@@ -119,18 +119,11 @@ def country_report(thread_id, assist_id, country, text, answer, bot=None):
     
     final_data[country] = text
     del data[country]
-    random_one = random.choice(list(data.keys()))
-    final_data[random_one] = 1
-    del data[random_one]
     for key in list(data.keys()):
-        if random.random() <= 0.1:
-            final_data[key] = 2
-            data.pop(key, None)
-        elif key[:-1] in text or key[:-1] in answer:
+        if key[:-1] in text or key[:-1] in answer:
             final_data[key] = 2
             data.pop(key, None)
     final_data = str({key: value for key, value in final_data.items() if value != 0})
-    print(final_data)
     openai.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
