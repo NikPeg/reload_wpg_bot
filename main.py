@@ -444,13 +444,12 @@ def get_user_info(user_country, years=0):
     support = data["rating_government"][-1]
     era = config_bd["era"]
 
-    # res = (
-    #    f"ВВП: {gdp} млрд паромонет\n"
-    #    f"Население: {population} млн человек\n"
-    #    f"Рейтинг: {support}%\n"
-    #    f"Эпоха: {era}\n"
-    #)
-    res = ""
+    res = (
+        f"ВВП: {gdp} млрд паромонет\n"
+        f"Население: {population} млн человек\n"
+        f"Рейтинг: {support}%\n"
+        f"Эпоха: {era}\n"
+    )
     if years == 0 or years == 999:
         res += f"Кубик: {success}% (учитывай бросок кубика в ответе, но не упомянай его)\n"
     elif years != 999:
