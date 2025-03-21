@@ -342,6 +342,7 @@ def get_top_countries(user_id):
 
         gdp = country_data["GDP"][-1]
         population = country_data["population"][-1]
+        power = country_data["power"][-1]
         support = country_data["rating_government"][-1]
 
         # Расчет ВВП на душу населения
@@ -351,6 +352,7 @@ def get_top_countries(user_id):
             "name": country,
             "gdp": gdp,
             "population": population,
+            "power": power,
             "support": support,
             "gdp_per_capita": gdp_per_capita
         })
@@ -367,6 +369,12 @@ def get_top_countries(user_id):
     top = "Топ-5 стран по населению:\n"
     for i, country in enumerate(top_population, 1):
         top += f"{i}. {country['name']} - {country['population']:.2f} млн человек\n"
+    bot.send_message(user_id, top)
+
+    top_power = sorted(countries_data, key=lambda x: x["power"], reverse=True)[:5]
+    top = "Топ-5 стран по военной мощи:\n"
+    for i, country in enumerate(top_power, 1):
+        top += f"{i}. {country['name']} - {country['power']:.2f}\n"
     bot.send_message(user_id, top)
 
     # Сортировка и вывод топ-5 по поддержке населения
@@ -401,6 +409,9 @@ def send_graphics(message):
         if key == "population":
             y_text = "Млн человек"
             name = "Население"
+        if key == "power":
+            y_text = "пункты"
+            name = "Военная мощь"
         if key == "rating_government":
             y_text = "% населения"
             name = "Процент поддержки правительства"
@@ -570,7 +581,7 @@ def new_year():
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 
-                graph = gpt.ask(f"{info}\nНапиши немного меньшие показатели ВВП, численности и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                graph = gpt.ask(f"{info}\nНапиши актуальные показатели ВВП, численности, военной мощи и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
