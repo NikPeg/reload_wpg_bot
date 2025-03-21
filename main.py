@@ -436,7 +436,7 @@ def unknow_command(message):
 
 
 def get_user_info(user_country, years=0):
-    success = random.randrange(0, 30)
+    success = random.randrange(0, 80)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
     population = data["population"][-1]
@@ -471,6 +471,8 @@ def check_years(text, thread, is_admin=False):
             bot.send_message(-4707616830, text="Parsed answer: " + word)
             if int(word) == 999:
                 return 999
+            if int(word) < 5:
+                return 0
             return int(word) // 5
     return 999
 
