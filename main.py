@@ -451,7 +451,7 @@ def get_user_info(user_country, years=0):
     gdp = data["GDP"][-1]
     population = data["population"][-1]
     support = data["rating_government"][-1]
-    success = random.randrange(0, support)
+    success = random.randrange(0, int(support))
     power = data["power"][-1]
     era = config_bd["era"]
 
@@ -581,7 +581,7 @@ def new_year():
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 
-                graph = gpt.ask(f"{info}\nНапиши актуальные показатели ВВП, численности, военной мощи и поддержки населения на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, военной мощи и поддержки населения на основе этих данных. Они должны быть почти такими же, +-1. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
