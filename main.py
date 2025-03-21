@@ -529,24 +529,17 @@ def handle_gpt_message(message, request=None):
     if years == 999:
         return 
 
-    text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = user_country, text = f"Лидер {user_country} приказал {request}", answer=text)
-    if not text:
-        bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
-        return
-    json_string = text.replace("json", "")
-    json_string = json_string.replace("```", "").strip()
-    print(json_string)
-    json_string = json.loads(json_string)
     with open(country_path, 'r+', encoding='utf-8') as country:
         country_list = json.load(country)
-    for country in json_string:
+    for country in country_list:
         if country == user_country:
             continue
-        if country in country_list and isinstance(country_list[country], dict) and "id" in country_list[country]:
+        if country[:-1] in request or country[:-1] in text and random.randrange(0, 2):
             country_data = country_list[country]
             if country_data["id"] != 0:
-                id = int(country_data["id"])
-                message = bot.send_message(id, text = json_string[country])
+                text = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
+                country_id = int(country_data["id"])
+                message = bot.send_message(country_id, text = json_string[country])
                 bot.send_message(-4707616830, f"Влияние на срану {country}:")
                 bot_trac(message)
 
