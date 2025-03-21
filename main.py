@@ -594,25 +594,18 @@ def new_year():
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
                             text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}. Проект уже завершен", answer=text)
-                            if not text:
-                                bot.send_message(-4707616830, "Ассистент влияния на страны молчит")
-                                continue
-                            json_string = text.replace("json", "")
-                            json_string = json_string.replace("```", "").strip()
-                            print(json_string)
-                            json_string = json.loads(json_string)
-                            with open(country_path, 'r+', encoding='utf-8') as country:
-                                country_list = json.load(country)
-                            for new_country in json_string:
-                                if new_country == country:
+                            
+                            for country in country_list:
+                                if country == user_country:
                                     continue
-                                if new_country in country_list and isinstance(country_list[new_country], dict) and "id" in country_list[new_country]:
-                                    country_data = country_list[new_country]
-                                    if country_data["id"] != 0:
-                                        id = int(country_data["id"])
-                                        message = bot.send_message(id, text = json_string[new_country])
-                                        bot.send_message(-4707616830, f"Влияние на страну {new_country}:")
-                                        bot_trac(message)
+                                if country[:-1] in request or country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
+                                    country_data = country_list[country]
+                                if country_data["id"] != 0:
+                                    report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
+                                country_id = int(country_data["id"])
+                                message = bot.send_message(country_id, text=report)
+                                bot.send_message(-4707616830, f"Влияние на срану {country}:")
+                                bot_trac(message)
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
                             print("Произошла ошибка. Подробности записаны в error.log")
