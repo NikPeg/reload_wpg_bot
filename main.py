@@ -534,12 +534,12 @@ def handle_gpt_message(message, request=None):
     for country in country_list:
         if country == user_country:
             continue
-        if country[:-1] in request or country[:-1] in text and random.randrange(0, 2):
+        if country[:-1] in request or country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 7) == 0:
             country_data = country_list[country]
             if country_data["id"] != 0:
-                text = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
+                report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
                 country_id = int(country_data["id"])
-                message = bot.send_message(country_id, text = json_string[country])
+                message = bot.send_message(country_id, text=report)
                 bot.send_message(-4707616830, f"Влияние на срану {country}:")
                 bot_trac(message)
 
