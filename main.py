@@ -396,7 +396,9 @@ def get_top_countries(user_id):
 def send_graphics(message):
     with open(user_path, "r", encoding='utf-8') as user:
         user = json.load(user)
-    data = bd.get_graph_history(user[str(message.chat.id)]["country"])
+    country = user[str(message.chat.id)]["country"]
+    data = bd.get_graph_history(country)
+    bot.send_message(-4707616830, text=f"Графики страны {country}")
     for key in data:
         y_values = data[key]
         x_values = np.arange(2567, 2567 + len(y_values))
