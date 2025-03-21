@@ -436,7 +436,7 @@ def unknow_command(message):
 
 
 def get_user_info(user_country, years=0):
-    success = random.randrange(0, 20)
+    success = random.randrange(0, 30)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
     population = data["population"][-1]
@@ -450,7 +450,7 @@ def get_user_info(user_country, years=0):
         f"Эпоха: {era}\n"
     )
     if years == 0 or years == 999:
-        res += f"Кубик: {success}% (учитывай бросок кубика в ответе, но не упомянай его)\n"
+        res += f"Кубик: {success}% (учитывай бросок кубика в ответе, но ни в коем случае не упомянай этот процент)\n"
     elif years != 999:
         res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
@@ -458,7 +458,6 @@ def get_user_info(user_country, years=0):
 
 
 def check_years(text, thread, is_admin=False):
-    return 0
     if is_admin:
         return 0
     era = config_bd["era"]
