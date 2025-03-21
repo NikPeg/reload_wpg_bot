@@ -436,11 +436,11 @@ def unknow_command(message):
 
 
 def get_user_info(user_country, years=0):
-    success = random.randrange(0, 80)
     data = bd.get_graph_history(user_country)
     gdp = data["GDP"][-1]
     population = data["population"][-1]
     support = data["rating_government"][-1]
+    success = random.randrange(0, support)
     era = config_bd["era"]
 
     res = (
