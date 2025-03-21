@@ -441,12 +441,14 @@ def get_user_info(user_country, years=0):
     population = data["population"][-1]
     support = data["rating_government"][-1]
     success = random.randrange(0, support)
+    power = data["power"][-1]
     era = config_bd["era"]
 
     res = (
         f"ВВП: {gdp} млрд паромонет\n"
         f"Население: {population} млн человек\n"
         f"Рейтинг: {support}%\n"
+        f"Военная мощь: {power}\n"
         f"Эпоха: {era}\n"
     )
     if years == 0 or years == 999:
@@ -458,6 +460,7 @@ def get_user_info(user_country, years=0):
 
 
 def check_years(text, thread, is_admin=False):
+    return 0
     if is_admin:
         return 0
     era = config_bd["era"]
@@ -571,8 +574,8 @@ def new_year():
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
-                gdp, population, rating = tuple(graph.values())
-                message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nРейтинг: {rating}%")
+                gdp, population, power, rating = tuple(graph.values())
+                message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nВоенная мощь: {power}\nРейтинг: {rating}%")
                 bot_trac(message)
                 bd.mod_graph(country, graph)
             except Exception as e:
