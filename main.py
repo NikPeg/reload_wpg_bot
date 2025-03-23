@@ -598,16 +598,16 @@ def new_year():
                             bd.del_proj(str(id), proj)
                             text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}. Проект уже завершен", answer=text)
                             
-                            for country in country_list:
-                                if country == user_country:
+                            for new_country in country_list:
+                                if country == new_country:
                                     continue
-                                if country[:-1] in request or country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
-                                    country_data = country_list[country]
+                                if new_country[:-1] in request or new_country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
+                                    country_data = country_list[new_country]
                                 if country_data["id"] != 0:
-                                    report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
+                                    report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {new_country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
                                 country_id = int(country_data["id"])
                                 message = bot.send_message(country_id, text=report)
-                                bot.send_message(-4707616830, f"Влияние на срану {country}:")
+                                bot.send_message(-4707616830, f"Влияние на срану {new_country}:")
                                 bot_trac(message)
                         except Exception as e:
                             logging.error(f"Произошла ошибка: {type(e).__name__} - {e}\n{traceback.format_exc()}")
