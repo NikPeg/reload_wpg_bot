@@ -213,7 +213,7 @@ def get_graph_history(country):
         return mdata
 
 
-translate = ["GDP", "population", "power", "rating_government"]
+translate = ["GDP", "population", "rating_government", "power"]
 
 
 def mod_graph(country, d):
