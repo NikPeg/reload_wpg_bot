@@ -398,7 +398,7 @@ def send_graphics(message):
         user = json.load(user)
     country = user[str(message.chat.id)]["country"]
     data = bd.get_graph_history(country)
-    bot.send_message(-4707616830, text=f"Графики страны {country}")
+    bot.send_message(-4707616830, text=f"Графики страны {country}:")
     for key in data:
         y_values = data[key]
         x_values = np.arange(2567, 2567 + len(y_values))
@@ -536,7 +536,7 @@ def handle_gpt_message(message, request=None):
     for country in country_list:
         if country == user_country:
             continue
-        if country[:-1] in request or country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
+        if country[:-1] in request or country[:-1] in text and random.randrange(0, 3) == 0 or random.randrange(0, 25) == 0:
             country_data = country_list[country]
             if country_data["id"] != 0:
                 report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
@@ -573,6 +573,7 @@ def new_year():
                 era = config_bd["era"]
                 info = get_user_info(country)
                 graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, военной мощи и поддержки населения на основе этих данных. Они должны быть почти такими же, +-1. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                bot.send_message(-4707616830, graph)
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
