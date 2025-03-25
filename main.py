@@ -476,7 +476,7 @@ def check_years(text, thread, is_admin=False):
     if is_admin:
         return 0
     era = config_bd["era"]
-    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nНапиши срок реализации приказа игрока в эпохе {era}. Ответь числом от 0 до 100 лет. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
+    answer = gpt.ask(f"Это сообщение игрока в военно-политическую игру:\n{text}\nНапиши срок реализации приказа игрока в эпохе {era}. Ответь числом от 0 до 10 лет. Если сообщение игрока является вопросом, ответь 999. Объясни свой ответ")
     bot.send_message(-4707616830, text=answer)
     for word in answer.split()[::-1]:
         if "-" in word:
@@ -486,9 +486,9 @@ def check_years(text, thread, is_admin=False):
             bot.send_message(-4707616830, text="Parsed answer: " + word)
             if int(word) == 999:
                 return 999
-            if int(word) < 5:
+            if int(word) < 3:
                 return 0
-            return int(word) // 5
+            return int(word)
     return 999
 
 
@@ -571,7 +571,7 @@ def new_year():
             try:
                 era = config_bd["era"]
                 info = get_user_info(country)
-                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, поддержки населения и военной мощи на основе этих данных. Они должны быть почти такими же, +-1. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, поддержки населения и военной мощи на основе этих данных. Они должны быть почти такими же, +-5. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 bot.send_message(-4707616830, graph)
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
@@ -579,7 +579,7 @@ def new_year():
                 gdp, population, rating, power = tuple(graph.values())
                 message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nРейтинг: {rating}%\nВоенная мощь: {power}")
                 bot_trac(message)
-                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко. Опиши реалистичную новости для эпохи {era}, необязательно хорошую новость.\n{info}", assist_id=config_bd["user_event_handler"])
+                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко. Опиши реалистичную новости для эпохи {era}, обязательно хорошую новость.\n{info}", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 bd.mod_graph(country, graph)
