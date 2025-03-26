@@ -337,7 +337,7 @@ def get_top_countries(user_id):
     countries_data = []
     for country, country_data in data.items():
         # Пропускаем страну "Администрация"
-        if country == "Администрация":
+        if country == "Администрация" or country == "Шайервуд":
             continue
 
         gdp = country_data["GDP"][-1]
