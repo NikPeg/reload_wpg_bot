@@ -519,6 +519,7 @@ def handle_gpt_message(message, request=None):
     info = get_user_info(user_country, years)
     text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}\nНапиши результат приказа коротко, одним абзацем", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
+    text = text if text else "Шшвмпыуцуашцунщмум"
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
     
