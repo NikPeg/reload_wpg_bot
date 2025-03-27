@@ -572,7 +572,7 @@ def new_year():
             try:
                 era = config_bd["era"]
                 info = get_user_info(country)
-                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, поддержки населения и военной мощи на основе этих данных. Они должны быть почти такими же, +-5. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
+                graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, поддержки населения и военной мощи на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
                 bot.send_message(-4707616830, graph)
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
@@ -580,7 +580,7 @@ def new_year():
                 gdp, population, rating, power = tuple(graph.values())
                 message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nРейтинг: {rating}%\nВоенная мощь: {power}")
                 bot_trac(message)
-                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко. Опиши реалистичную новости для эпохи {era}, обязательно хорошую новость.\n{info}", assist_id=config_bd["user_event_handler"])
+                answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко.\n{info}", assist_id=config_bd["user_event_handler"])
                 message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 bd.mod_graph(country, graph)
