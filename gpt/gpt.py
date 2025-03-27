@@ -139,7 +139,7 @@ def chat_gpt(thread, text: str, assist_id="1"):
     return response
 
 
-def wait_for_run(thread_id: str, run_id: str, timeout: int = 30) -> bool:
+def wait_for_run(thread_id: str, run_id: str, timeout: int = 180) -> bool:
     """Wait for a specific run to complete."""
     start_time = time.time()
     
@@ -164,7 +164,7 @@ def wait_for_run(thread_id: str, run_id: str, timeout: int = 30) -> bool:
     return False
 
 
-def wait_for_run_and_get_response(thread_id: str, run_id: str, timeout: int = 30) -> Optional[str]:
+def wait_for_run_and_get_response(thread_id: str, run_id: str, timeout: int = 180) -> Optional[str]:
     """Wait for a run to complete and return the assistant's response."""
     if wait_for_run(thread_id, run_id, timeout):
         try:
@@ -185,7 +185,7 @@ def wait_for_run_and_get_response(thread_id: str, run_id: str, timeout: int = 30
     return None  # Run didn't complete successfully
 
 
-def wait_for_run_completion(thread_id, run_id, timeout=30):
+def wait_for_run_completion(thread_id, run_id, timeout=180):
     """Wait for a run to complete and return the result."""
     start_time = time.time()
     while time.time() - start_time < timeout:
