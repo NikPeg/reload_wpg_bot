@@ -573,7 +573,6 @@ def new_year():
                 era = config_bd["era"]
                 info = get_user_info(country)
                 graph = gpt.ask(f"{info}\nНапиши новые показатели ВВП, численности, поддержки населения и военной мощи на основе этих данных. Дай ответ в формате json. Пришли только json с новыми показателями без комментариев")
-                bot.send_message(-4707616830, graph)
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
