@@ -60,7 +60,7 @@ def new_assist():
     return assistant
 
 
-def chat_gpt(thread, text: str, assist_id="1") -> Optional[str]:
+def chat_gpt(thread, text: str, assist_id="1"):
     """
     Send a message to the shared thread and wait if there's an active run.
     
@@ -72,68 +72,89 @@ def chat_gpt(thread, text: str, assist_id="1") -> Optional[str]:
     Returns:
         Assistant's response or None if there was an error or timeout (3 minutes)
     """
-    try:
-        # Add the user's message to the thread
-        openai.beta.threads.messages.create(
-            thread_id=thread,
-            role="user",
-            content=text
-        )
-        
-        # Create a run with the specified assistant
-        run = openai.beta.threads.runs.create(
-            thread_id=thread,
-            assistant_id=assist_id
-        )
-        
-        # Set timeout: 3 minutes = 180 seconds
-        timeout = 180
-        start_time = time.time()
-        
-        # Poll until the run completes or times out
-        while True:
+    # Set timeout: 3 minutes = 180 seconds
+    timeout = 180
+    start_time = time.time()
+    
+    while True:
+        try:
             # Check if we've exceeded the timeout
             if time.time() - start_time > timeout:
                 print("Operation timed out after 3 minutes")
-                # Attempt to cancel the run
-                try:
-                    openai.beta.threads.runs.cancel(
-                        thread_id=thread,
-                        run_id=run.id
-                    )
-                except:
-                    # If cancellation fails, just continue to return None
-                    return None
-            
-            # Get the current state of the run
-            run_status = openai.beta.threads.runs.retrieve(
+                return None
+                
+            # Try to add the user's message to the thread
+            openai.beta.threads.messages.create(
                 thread_id=thread,
-                run_id=run.id
+                role="user",
+                content=text
             )
             
-            if run_status.status == "completed":
-                break
-            elif run_status.status == "failed" or run_status.status == "cancelled":
-                return None
+            # If successful, create a run with the specified assistant
+            run = openai.beta.threads.runs.create(
+                thread_id=thread,
+                assistant_id=assist_id
+            )
             
-            # Wait before polling again
-            time.sleep(1)
-        
-        # Get the latest messages from the thread (assistant's response)
-        messages = openai.beta.threads.messages.list(
-            thread_id=thread
-        )
-        
-        # Get the first assistant message (latest response)
-        for message in messages.data:
-            if message.role == "assistant":
-                # Return the content of the message
-                return message.content[0].text.value
-        
-        return None
-    except Exception as e:
-        print(f"Error in chat_gpt: {e}")
-        return None
+            # Reset timeout start time after successfully creating the run
+            run_start_time = time.time()
+            
+            # Poll until the run completes or times out
+            while True:
+                # Check if we've exceeded the timeout
+                if time.time() - run_start_time > timeout:
+                    print("Operation timed out after 3 minutes")
+                    # Attempt to cancel the run
+                    try:
+                        openai.beta.threads.runs.cancel(
+                            thread_id=thread,
+                            run_id=run.id
+                        )
+                    except:
+                        # If cancellation fails, just continue to return None
+                        pass
+                    return None
+                
+                # Get the current state of the run
+                run_status = openai.beta.threads.runs.retrieve(
+                    thread_id=thread,
+                    run_id=run.id
+                )
+                
+                if run_status.status == "completed":
+                    break
+                elif run_status.status == "failed" or run_status.status == "cancelled":
+                    return None
+                
+                # Wait before polling again
+                time.sleep(1)
+            
+            # Get the latest messages from the thread (assistant's response)
+            messages = openai.beta.threads.messages.list(
+                thread_id=thread
+            )
+            
+            # Get the first assistant message (latest response)
+            for message in messages.data:
+                if message.role == "assistant":
+                    # Return the content of the message
+                    return message.content[0].text.value
+            
+            return None
+            
+        except Exception as e:
+            # Check if the error is about an active run
+            error_message = str(e)
+            if "Can't add messages" in error_message and "while a run" in error_message and "is active" in error_message:
+                # If there's an active run, wait a bit and try again
+                print("Waiting for active run to complete...")
+                time.sleep(5)
+                # Continue the outer loop to try again
+                continue
+            else:
+                # For other errors, print and return None
+                print(f"Error in chat_gpt: {e}")
+                return None
 
 
 def country_report(*args, **kwargs):
