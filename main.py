@@ -583,7 +583,10 @@ def new_year():
                 message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nРейтинг: {rating}%\nВоенная мощь: {power}")
                 bot_trac(message)
                 answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко.\n{info}", assist_id=config_bd["user_event_handler"])
-                message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
+                if not answer:
+                    answer = gpt.ask(f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко.\n{info}")
+                if answer:
+                    message = bot.send_message(id, text = f"{country} встретил(а) новый {year} год следующей новостью:\n{answer}")
                 bot_trac(message)
                 bd.mod_graph(country, graph)
             except Exception as e:
