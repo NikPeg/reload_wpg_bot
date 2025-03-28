@@ -543,6 +543,8 @@ def handle_gpt_message(message, request=None):
             country_data = country_list[country]
             if country_data["id"] != 0:
                 report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
+                if not report:
+                    report = gpt.ask(f"повелитель {user_country}, приказал {request}. Напиши новость об этом для страны {country}. Кратко, одним предложением."
                 country_id = int(country_data["id"])
                 message = bot.send_message(country_id, text=report)
                 bot.send_message(-4707616830, f"Влияние на срану {country}:")
@@ -613,6 +615,8 @@ def new_year():
                                 if country_data["id"] != 0:
                                     report = gpt.chat_gpt(thread = user_thread, text = f"Напиши новость об этом для страны {new_country}. Кратко, одним предложением.", assist_id=config_bd["user_event_handler"])
                                 country_id = int(country_data["id"])
+                                if not report:
+                                    report = gpt.ask(f"Лидер {country} приказал {message.text}. Проект уже завершен. Напиши новость об этом для страны {new_country}. Кратко, одним предложением."
                                 message = bot.send_message(country_id, text=report)
                                 bot.send_message(-4707616830, f"Влияние на срану {new_country}:")
                                 bot_trac(message)
