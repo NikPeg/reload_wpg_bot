@@ -598,6 +598,8 @@ def new_year():
                         try:
                             info = get_user_info(country)
                             text = gpt.chat_gpt(thread = user_thread, text = f"В стране {country} завершен проект, обьявленный приказом:\n{user_list[str(id)]["projects"][proj]}\n{info}", assist_id=config_bd["user_event_handler"])
+                            if not text:
+                                text = gpt.ask(f"В стране {country} завершен проект, обьявленный приказом:\n{user_list[str(id)]["projects"][proj]}\n{info}")
                             message = bot.send_message(id, text)
                             bot_trac(message)
                             bd.del_proj(str(id), proj)
