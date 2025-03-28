@@ -103,8 +103,7 @@ def chat_gpt(thread, text: str, assist_id="1") -> Optional[str]:
                     )
                 except:
                     # If cancellation fails, just continue to return None
-                    pass
-                return None
+                    return None
             
             # Get the current state of the run
             run_status = openai.beta.threads.runs.retrieve(
