@@ -608,6 +608,7 @@ def new_year():
                             text = gpt.country_report(thread_id=user_thread, assist_id= config_bd["country_report"], country = country, text = f"Лидер {country} приказал {message.text}. Проект уже завершен", answer=text)
                             
                             for new_country in country_list:
+                                country_data = country_list[new_country]
                                 if country == new_country:
                                     continue
                                 if new_country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
