@@ -205,6 +205,8 @@ def wait_for_run_completion(thread_id, run_id, timeout=180):
                     if msg.role == "assistant":
                         # Extract text content from the message
                         content = [part.text.value for part in msg.content if hasattr(part, 'text')]
+                        if not content:
+                            print("no content!")
                         return '\n'.join(content) if content else None
                 return None
             
