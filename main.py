@@ -458,14 +458,14 @@ def get_user_info(user_country, years=0):
     era = config_bd["era"]
 
     res = (
-        f"ВВП: {gdp} млрд паромонет\n"
-        f"Население: {population} млн человек\n"
-        f"Рейтинг: {support}%\n"
+        # f"ВВП: {gdp} млрд паромонет\n"
+        # f"Население: {population} млн человек\n"
+        # f"Рейтинг: {support}%\n"
         f"Военная мощь: {power}\n"
-        f"Эпоха: {era}\n"
+        # f"Эпоха: {era}\n"
     )
     if years == 0 or years == 999:
-        res += f"Кубик: {success}% (учитывай бросок кубика в ответе, но ни в коем случае не упомянай этот процент)\n"
+        res += f"Кубик: {success}%\n"
     elif years != 999:
         res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
@@ -518,10 +518,10 @@ def handle_gpt_message(message, request=None):
     answer = "Произошла ошибка. Пожалуйста, повторите запрос!"
     years = check_years(request, user_thread, str(message.chat.id) in config_bd["admin_list"])
     info = get_user_info(user_country, years)
-    text = gpt.chat_gpt(thread = user_thread, text = f"Я, повелитель {user_country}, приказываю {request}\n{info}\nНапиши результат приказа коротко, одним абзацем", assist_id=config_bd["user_event_handler"])
+    text = gpt.chat_gpt(thread = user_thread, text = f"Повелитель {user_country} приказал {request}\n{info}\nПроект уже завершен. Напиши результат приказа коротко, одним абзацем. Обязательно учитывай бросок кубика! Но не упомянай этот процент.", assist_id=config_bd["user_event_handler"])
     bd.user_new_requests(str(message.chat.id))
     if not text:
-        text = gpt.ask(f"Я, повелитель {user_country}, приказываю {request}\n{info}\nНапиши результат приказа коротко, одним абзацем")
+        text = gpt.ask(f"Повелитель {user_country} приказал {request}\n{info}\nПроект уже завершен. Напиши результат приказа коротко, одним абзацем. Обязательно учитывай бросок кубика! Но не упомянай этот процент.")
     text = text if text else "Произошла ошибка. Админ ответит на ваш приказ в ближайшее время"
     bot.edit_message_text(chat_id=for_edit.chat.id, message_id = for_edit.message_id, text = text)
     bot_trac(for_edit)
