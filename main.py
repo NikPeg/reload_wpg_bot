@@ -458,9 +458,9 @@ def get_user_info(user_country, years=0):
     era = config_bd["era"]
 
     res = (
-        # f"ВВП: {gdp} млрд паромонет\n"
-        # f"Население: {population} млн человек\n"
-        # f"Рейтинг: {support}%\n"
+        f"ВВП: {gdp} млрд паромонет\n"
+        f"Население: {population} млн человек\n"
+        f"Рейтинг: {support}%\n"
         f"Военная мощь: {power}\n"
         f"Эпоха: {era}\n"
     )
