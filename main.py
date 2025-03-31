@@ -611,7 +611,7 @@ def new_year():
                                 if country == new_country:
                                     continue
                                 country_data = country_list[new_country]
-                                if new_country[:-1] in text and random.randrange(0, 2) == 0 or random.randrange(0, 20) == 0:
+                                if new_country[:-1] in text or random.randrange(0, 20) == 0:
                                     country_data = country_list[new_country]
                                 else:
                                     continue
