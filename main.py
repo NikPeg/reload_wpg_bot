@@ -462,7 +462,7 @@ def get_user_info(user_country, years=0):
         # f"Население: {population} млн человек\n"
         # f"Рейтинг: {support}%\n"
         f"Военная мощь: {power}\n"
-        # f"Эпоха: {era}\n"
+        f"Эпоха: {era}\n"
     )
     if years == 0 or years == 999:
         res += f"Кубик: {success}%\n"
