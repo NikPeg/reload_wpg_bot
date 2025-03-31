@@ -462,10 +462,11 @@ def get_user_info(user_country, years=0):
         f"Население: {population} млн человек\n"
         f"Рейтинг: {support}%\n"
         f"Военная мощь: {power}\n"
-        f"Эпоха: {era}\n"
+        # f"Эпоха: {era}\n"
     )
     if years == 0 or years == 999:
-        res += f"Кубик: {success}%\n"
+        pass
+        # res += f"Кубик: {success}%\n"
     elif years != 999:
         res += f"Срок реализации: {years} лет\n"
     bot.send_message(-4707616830, text=res)
@@ -581,7 +582,7 @@ def new_year():
                 json_string = graph.replace("json", "")
                 json_string = json_string.replace("```", "").strip()
                 graph = json.loads(json_string)
-                gdp, population, rating, power = tuple(graph.values())
+                gdp, population, rating, power = tuple(list(graph.values())[:4])
                 message = bot.send_message(id, f"Новые показатели:\nВВП: {gdp} млрд\nНаселение: {population} млн\nРейтинг: {rating}%\nВоенная мощь: {power}")
                 bot_trac(message)
                 answer = gpt.chat_gpt(thread = user_thread, text = f"Напиши одну главную новость, произошедшую за последний год в стране {country}, пиши кратко.\n{info}", assist_id=config_bd["user_event_handler"])
